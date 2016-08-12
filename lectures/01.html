@@ -1,0 +1,645 @@
+﻿<!-- Any section element inside of this container is displayed as a slide -->
+<div class="slides">
+    <section data-markdown>
+	# Computer Vision
+	## Inception
+	---
+	Roman Golovanov
+    </section>
+	
+	<section data-markdown>
+	## Course structure
+	
+	1. OpenCV Library
+	1. Image Segmentation
+	1. Edge Detection
+	1. Movement Detection
+	1. Feature Detection
+	1. Feature Matching
+	1. Object Tracking
+	1. Stereovision
+	</section>
+	
+	<section>
+		<section data-markdown>
+		### Image Segmentation
+		
+		TODO: Add application's samples
+		</section>
+		
+		<section data-markdown>
+		### Image Segmentation
+		
+		TODO: Add application's samples 2
+		</section>		
+	</section>
+	
+	<section>
+		<section data-markdown>
+		### Edge Detection
+		
+		TODO: Add application's samples
+		</section>
+		
+		<section data-markdown>
+		### Edge Detection
+		
+		TODO: Add application's samples 2
+		</section>		
+	</section>
+	
+	<section>
+		<section data-markdown>
+		### Movement Detection
+		
+		TODO: Add application's samples
+		</section>
+		
+		<section data-markdown>
+		### Movement Detection
+		
+		TODO: Add application's samples 2
+		</section>		
+	</section>
+	
+	<section>
+		<section data-markdown>
+		### Feature Detection
+		
+		TODO: Add application's samples
+		</section>
+		
+		<section data-markdown>
+		### Feature Detection
+		
+		TODO: Add application's samples 2
+		</section>		
+	</section>
+	
+	<section>
+		<section data-markdown>
+		### Feature Matching
+		
+		TODO: Add application's samples
+		</section>
+		
+		<section data-markdown>
+		### Feature Matching
+		
+		TODO: Add application's samples 2
+		</section>		
+	</section>
+	
+	<section>
+		<section data-markdown>
+		### Object Tracking
+		
+		TODO: Add application's samples
+		</section>
+		
+		<section data-markdown>
+		### Object Tracking
+		
+		TODO: Add application's samples 2
+		</section>		
+	</section>
+	
+	<section>
+		<section data-markdown>
+		### Stereovision
+		
+		TODO: Add application's samples
+		</section>
+		
+		<section data-markdown>
+		### Stereovision
+		
+		TODO: Add application's samples 2
+		</section>		
+	</section>
+	
+	<section data-markdown>
+	# OpenCV library
+	
+	<!-- Based on materials from http://www.cs.iit.edu/~agam/cs512/lect-notes/opencv-intro/opencv-intro.html -->
+	</section>
+
+	<section>
+		<section data-markdown>
+		## Introduction
+		
+		[OpenCV (Open Source Computer Vision Library)](http://opencv.org/about.html)
+		
+		is an open source computer vision and machine learning software library.
+		
+		OpenCV was built to provide a common infrastructure for computer vision applications and to accelerate the use of machine perception in the commercial products.
+		
+		Being a BSD-licensed product, OpenCV makes it easy for businesses to utilize and modify the code.
+		
+		...
+		</section>
+		
+		<section data-markdown>
+		### History
+		![OpenCV History](img01/cvhistory.png)
+		</section>
+		
+		<section data-markdown>
+		### Modules
+		* _core_ - Core functionality
+		* _imgproc_ - Image processing
+		* _imgcodecs_ - Image file reading and writing
+		* _videoio_ - Media I/O
+		* _highgui_ - High-level GUI
+		* _video_ - Video Analysis
+		* _calib3d_ - Camera Calibration and 3D Reconstruction
+		* _features2d_ - 2D Features Framework
+		* _objdetect_ - Object Detection
+		* ...
+		* _cudaXXX_ - Modules optimized for CUDA
+		</section>
+		
+		<section data-markdown>
+		### Structure
+		![OpenCV Structure](img01/cvstruct.png)
+		</section>
+		
+		<section data-markdown>
+		### Naming Conventions
+		* OpenCV uses mixed-case style identifiers for external functions, types and class methods.
+		* Class names start with a capital letter.
+		* methods' and functions' names start with a small latter, unless they are named after the author of the algorithm, e.g. cv::Sobel().
+		* Macros and enumeration constants are written with all capital letters. Words are separated by underscore.
+		* All external functions and classes must use CV_EXPORTS, otherwise there will be linking errors on Windows.
+		</section>
+		
+		<section data-markdown>
+		### Naming Conventions cont.
+		**Functions**:
+		
+			cv::ActionTargetMod(input,..., output,..., flag|optional)
+
+			Action = the core functionality (e.g. set, create)
+			Target = the target image area (e.g. contour, polygon)
+			Mod    = optional modifiers (e.g. argument type)
+			
+			E.g.: cv::medianBlur(...)
+
+		**Matrix data types**:
+		
+			CV_<bit_depth>(S|U|F)C<number_of_channels>
+
+			S = Signed integer
+			U = Unsigned integer
+			F = Float 
+
+			E.g.: CV_8UC1 means an 8-bit unsigned single-channel matrix,
+			
+			      CV_32FC2 means a 32-bit float matrix with two channels.
+		</section>
+		
+		<section data-markdown>
+		### Compilation
+		
+		* Linux:
+		> g++ hello-world.cpp -o hello-world -I /usr/local/include/opencv -L /usr/local/lib -lm -lcv -lhighgui -lcvaux
+			
+		* Windows:
+		In the project preferences set the path to the OpenCV header files and the path to the OpenCV library files.
+		
+		</section>
+	</section>
+
+	<section>
+		<section data-markdown>
+		## Graphical User Interface
+		</section>
+		
+		<section data-markdown>
+		### Window management
+		```
+		// Creates a window
+		const std::string windowName = "My Window";
+		cv::namedWindow(windowName, WINDOW_AUTOSIZE);
+		
+		// Load and show image in window
+		const cv::Mat img = cv::imread("test.bmp");
+		cv::imshow(windowName,img);
+		
+		// Operations with window
+		cv::moveWindow(windowName, 100 /*x*/, 200 /*y*/);
+		cv::resizeWindow(windowName, 300 /*width*/, 400 /*height*/);
+		cv::updateWindow(windowName);
+		
+		// Close window
+		cv::destroyWindow(windowName);
+		cv::destroyAllWindows(windowName);
+		```		
+		</section>
+		
+		<section data-markdown>
+		### Input Handling
+		
+		OpenCV highgui module allows to flexibly handle mouse and keyboard events.
+		
+		</section>
+		
+		<section data-markdown>
+		#### Mouse Events
+		```
+		// setup mouse handler
+		cv::setMouseCallback(windowName, onMouse, static_cast<void*>(&m_mouseLine));
+
+		// define handler which will track mouse click and move
+		void onMouse(int event, int x, int y, int flags, void* param) {
+		  auto& line = *static_cast<std::pair<cv::Point, cv::Point>*>(param);
+		  switch (event) {
+			case CV_EVENT_LBUTTONDOWN:
+			case CV_EVENT_RBUTTONDOWN:
+			  line.first = { x, y };
+			  return;
+			case CV_EVENT_MOUSEMOVE:
+			...
+		  }
+		}
+		```
+		</section>
+		
+		<section data-markdown>
+		#### Keyboard Events
+		
+		* The keyboard does not have an event handler.
+
+		* Get keyboard input without blocking:
+		```
+		int key=cvWaitKey(10); // wait 10ms for input
+		```
+		* Get keyboard input with blocking:
+		```
+		int key=cvWaitKey(0); // wait indefinitely for input
+		```
+		</section>
+		
+		<section data-markdown>
+		#### UI Controls
+		
+		Define a trackbar handler:
+		```
+		void trackbarHandler(int pos) {
+		  printf("Trackbar position: %d\n", pos);
+		}
+		```
+			
+		Register the handler:
+		```
+		int val = 25; // shall be alive while window is active
+		const int maxVal = 100;
+		cv::createTrackbar("bar1", "win1", &val, maxVal, trackbarHandler);
+		```
+
+		Get the current trackbar position:
+		```
+		const int pos = cv::getTrackbarPos("bar1", "win1");
+		```
+		Set the trackbar position:
+		```
+		cv::setTrackbarPos("bar1", "win1", 25);
+		```
+		</section>
+		
+		<section data-markdown>
+		#### Drawing Primitives
+		
+		* cv::circle(...) - draws a circle
+		* cv::ellipse(...) - draws an ellipse or arc
+		* cv::line(...) - draws a line, see also **cv::LineIterator**
+		* cv::arrowedLine(...) - draws an arrow
+		* cv::rectangle(...) - draws a rectangle
+		* cv::drawContours(...) - draws outlines or filled contours
+		* cv::putText(...)  draws a text string
+		
+		</section>
+		
+		<section data-markdown>
+		### Demo
+		
+		See lesson1.vcproj
+		</section>
+	</section>
+
+	<section>
+		<section data-markdown>
+		## Basic Data Structures
+		
+		|           |          |
+		|-----------|------------------------|
+		| cv::Point | 2D Point |
+		| cv::Size  | 2D Size structure |
+		| cv::Rect  | 2D rectangle object |
+		| cv::Mat   | matrix or image object |
+		
+		</section>
+		
+		<section data-markdown>
+		### cv::Point{2|3,i|f|d}
+		
+		Members:
+		```
+		T x; // x coordinate
+		T y; // y coordinate
+		```
+		
+		Functions:
+		```cpp
+		dot(cv::Point<T>& pt) = x * pt.x + y * pt.y
+		ddot(cv::Point<T>& pt) = (double)x * pt.x + (double)y * pt.y
+		cross(cv::Point<T>& pt) = (double)x * pt.y - (double)y * pt.x
+		inside(cv::Rect<T>& rect) = rect.contains(*this)
+		```
+		
+		Operators:
+		```
+		+, -, +=, -= (cv::Point<T>& pt);
+		*, /, *=, /= ({double|int} val);
+		```
+		</section>
+		
+		<section data-markdown>
+		### cv::Size{2,i|f|d}
+		
+		Members:
+		```
+		T width;
+		T height;
+		```
+		
+		Functions:
+		```
+		area() = width * height
+		```
+		</section>
+		
+		<section data-markdown>
+		### cv::Rect{2,i|f|d}
+		
+		Members:
+		```
+		T x, y;
+		T width, height;
+		```
+		
+		Functions:
+		```
+		tl() = cv::Point{x, y}
+		br() = cv::Point{x + width, y + height}
+		size() = cv::Size{width, height}
+		area() = width * height
+		contains(cv::Point& pt) = x <= pt.x && pt.x < x + width 
+		                       && y <= pt.y && pt.y < y + height
+		```		
+		</section>
+	</section>
+
+	<section>
+		<section data-markdown>
+		## Work with cv::Mat
+		
+		C++ n-dimensional array class
+		
+		### Main members:
+		```
+		int flags; // depth, number of channels, cont. flag
+		int dims; // dimensionality, >= 2
+		int rows, cols; // number of rows and cols or (-1, -1) if dims > 2
+		uchar* data; // pointer to the data
+		int* refcount; // pointer to reference counter
+		```
+		
+		</section>
+		
+		<section data-markdown>
+		### Basic Operations
+		#### Allocation
+		```
+		cv::Mat m;
+		m.resize(30,50);
+		m.reserve({100, 200});
+		```
+		#### Release
+		```
+		m.resize({0, 0});
+		m.release();
+		```
+		#### Sharing - no data copying
+		```
+		cv::Mat m2;
+		m2.assignTo(m); // add ref and share data
+		cv::Mat m4{m1, cv::Range{0, 4}, cv::Range::all()};
+		cv::Mat m5{m1, cv::Rect{10, 20, 5, 7}};
+		```
+		#### Init
+		```
+		cv::Mat m{2, 2, CV_64F, {{1, 2}, {3, 4}}};
+		cv::Mat m2{10, 20, CV_8UC1, cv::Scalar{9}};
+		m2.create(20, 40, CV_8UC(5));
+		```
+		</section>
+		
+		<section data-markdown>
+		#### Sample of Init
+		
+		Code below initializes matrix with Flag of Russia
+		
+		```
+		const auto& redColor   = cv::Scalar{   0,   0, 255 };
+		const auto& blueColor  = cv::Scalar{ 255,   0,   0 };
+		const auto& whiteColor = cv::Scalar{ 255, 255, 255 };
+
+		const auto& flagSize = cv::Size{ 9, 6 };
+
+		cv::Mat m(flagSize, CV_8UC3, redColor);
+		m.rowRange(flagSize.height / 3, flagSize.height * 2 / 3).setTo(blueColor);
+		m.rowRange(0, flagSize.height / 3).setTo(whiteColor);
+		```
+		
+		![Flag of Russia in cv::Mat](img01/flagrf.png)
+		</section>
+		
+		<section data-markdown>
+		### Access Elements
+		```
+		cv::Mat m({ 10, 15 }, CV_8UC1, cv::Scalar{ 0 });
+		
+		// operator (...)
+		m(cv::Rect{ 5, 7, 3, 3 }).setTo(127);
+		m(cv::Range{ 3, 7 }, cv::Range{ 2, 9 }).setTo(255);
+		
+		// .at(...), .ptr(...)
+		m.at< char >(cv::Point{ 3, 5 }) = 64;
+		const auto p = m.ptr< char >(cv::Point{4, 8});
+		
+		// .rowRange(...), .colRange(...)
+		m.rowRange(0, 5).setTo(cv::Scalar{255});
+		
+		// .row(...), .col(...)
+		m.row(8).setTo(cv::Scalar{127});
+		
+		// .begin(), .end() iterators
+		for(auto it = m.begin(); it != m.end(); ++it)
+			func(*it);		
+		```
+		</section>
+		
+		<section data-markdown>
+		### Matrix Expressions
+		* Addition, subtraction, negation: A+B, A-B, A+s, A-s, s+A, s-A, -A
+		* Scaling: A*alpha
+		* Per-element multiplication and division: A.mul(B), A/B, alpha/A
+		* Matrix multiplication: A*B
+		* Transposition: A.t() (means AT)
+		* Bitwise logical operations: A op B, A op s, s op A, ~A, where op is one of :  &, |, ^.
+		* Element-wise minimum and maximum: min(A, B), min(A, alpha), max(A, B), max(A, alpha)
+		* Element-wise absolute value: abs(A)
+		* Cross-product, dot-product: A.cross(B) A.dot(B)
+		* Others
+		</section>
+	</section>
+
+	<section>
+		<section data-markdown>
+		## Work with Video
+		</section>
+	
+		<section data-markdown>
+		### Capturing Video Stream
+		cv::VideoCapture is class for capturing from video files, image sequences or cameras.
+		
+		Methods:
+		* open(...) - file name or device id (camera id)
+		* isOpened() - checks whether capture is opened
+		* release() - closes video file or capturing device
+		* grab() - grabs the next frame from video file or device
+		* retrieve(...) - decodes and returns grabbed video frame
+		* read(...), operator >> - grab + retrieve
+		* get(int) - returns specified capture property
+		* set(int, double) - sets a property
+		
+		</section>
+		
+		<section data-markdown>
+		### Frame Information
+		
+		Following set of properties is available for retrieving and changing:
+		```
+		CV_CAP_PROP_POS_MSEC Current position of the video file or video capture timestamp.
+		CV_CAP_PROP_POS_FRAMES 0-based index of the frame to be decoded/captured next.
+		CV_CAP_PROP_POS_AVI_RATIO Relative position of the video file: 0 - start, 1 - end.
+		CV_CAP_PROP_FRAME_WIDTH Width of the frames in the video stream.
+		CV_CAP_PROP_FRAME_HEIGHT Height of the frames in the video stream.
+		CV_CAP_PROP_FPS Frame rate.
+		CV_CAP_PROP_FOURCC 4-character code of codec.
+		CV_CAP_PROP_FRAME_COUNT Number of frames in the video file.
+		CV_CAP_PROP_FORMAT Format of the Mat objects returned by retrieve() .
+		CV_CAP_PROP_MODE Backend-specific value indicating the current capture mode.
+		```
+		
+		Available for cameras only:
+		```
+		CV_CAP_PROP_BRIGHTNESS Brightness of the image.
+		CV_CAP_PROP_CONTRAST Contrast of the image.
+		CV_CAP_PROP_SATURATION Saturation of the image.
+		CV_CAP_PROP_HUE Hue of the image.
+		CV_CAP_PROP_GAIN Gain of the image.
+		CV_CAP_PROP_EXPOSURE Exposure.
+		CV_CAP_PROP_CONVERT_RGB Indicates whether images should be converted to RGB.
+		CV_CAP_PROP_WHITE_BALANCE Currently not supported
+		CV_CAP_PROP_RECTIFICATION Rectification flag for stereo cameras
+		```
+
+		</section>
+		
+		<section data-markdown>
+		### Writing Video
+		cv::VideoWriter class is used for writing video.
+		
+		Methods:
+		* open(fileName, fourcc, fps, frameSize, isColor) - initializes/reinitializes writer
+		* isOpened() - return true if writer has been initialized
+		* write(image) - writes the next video frame
+		</section>
+		
+		<section data-markdown>
+		### Capturing and writing demo
+		
+		TODO: write simple code with capturing video from camera and writing it to the file
+		</section>
+	</section>
+
+	<section>
+		<section data-markdown>
+		## Utilities
+		</section>
+		
+		<section data-markdown>
+		### cv::CommandLineParaser
+		
+		Designed for command line parsing.
+		```
+		const std::string keys = "{help h usage ?|  | print this message}"
+		                         "{@image        |  | image to process }";
+
+		cv::CommandLineParser parser(argc, argv, keys);
+		parser.about("Computer Vision Classes Demo v1.0.0");
+		if (parser.has("help")) {
+		    parser.printMessage();
+		}
+
+		const auto& img = parser.get< cv::String >("@image");
+		if (!parser.check()) {
+		    parser.printErrors();
+		} else {
+		    std::cout << "Path to image: " << img << "\n";
+		}
+		```
+		</section>
+		<section data-markdown>
+		### cv::TickMeter
+		
+		The class computes passing time by counting the number of ticks per second.
+		
+		```
+		TickMeter tm;
+		tm.start();
+		// do something ...
+		tm.stop();
+		std::cout << tm.getTimeSec();
+		std::cout << tm.getTimeTicks();
+		std::cout << tm.getTimeMilli();
+		std::cout << tm.getTimeMicro();
+		```		
+		</section>
+		
+		<section data-markdown>
+		
+		### Utility Functions
+		
+		Align pointers and size, calculate norm, get system information and many other helpful things.
+		
+		</section>
+	</section>
+	
+	<section>		
+		<section data-markdown>
+		### Resources
+		* http://opencv.org/about.html
+		* [Introduction to programming with OpenCV](http://www.cs.iit.edu/~agam/cs512/lect-notes/opencv-intro/opencv-intro.html)
+		* [OpenCV Coding Style](http://code.opencv.org/projects/opencv/wiki/Coding_Style_Guide)
+		* [Learning OpenCV, G.Bradski and A.Kaehler](http://www.bogotobogo.com/cplusplus/files/OReilly%20Learning%20OpenCV.pdf)
+		* [OpenCV Tutorials](http://docs.opencv.org/3.0-beta/doc/tutorials/tutorials.html)
+		</section>
+	</section>
+	
+    <section data-markdown>
+        ## Thank You!
+    </section>
+</div>
