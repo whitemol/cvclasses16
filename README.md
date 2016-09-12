@@ -8,7 +8,7 @@ It takes 8 seminars-discussion lessons and 8 practical lessons.
 Most practical lessons will be based on using of the OpenCV v3. library.
 All materials and tasks will be hosted in this repository and available for all students. All program code is written under Visual Studio 2015 with v120 toolset.
 
-## First steps
+## First Steps
 Please ensure you have following instruments and settings to start the work:
 
 * Visual Studio 2013 (2015 with v120 Platform Toolset)
@@ -19,11 +19,14 @@ Please ensure you have following instruments and settings to start the work:
 * Setup Environment variable: OPENCV_DIR = C:\...\opencv\build\
 * Put opencv_world300.dll into Release folder after first build and opencv_world300d.dll into Debug folder.
 
-## Required knowledge
+## Required Knowledge
 * Basics of Digital Signal Processing
 * Basics of Digital Image Processing
 * C++ experience
 * Git experience
+
+## Feedback Form
+Please feel free to leave your feedback about lecture, home task or course overall via [anonymous feedback form (in russian)](https://goo.gl/forms/SIh8KT44qVoxnD453).
 
 ## Topics
 ### 1. Introduction into CV
