@@ -94,14 +94,65 @@
 		<section data-markdown>
 		### Object Tracking
 		
-		TODO: Add application's samples
+		Objects tracking are important components of many computer vision applications, including activity recognition, traffic monitoring and etc. 
+		
+		The problem of object tracking can be divided into two parts:
+		1. Detecting objects in frame
+		1. Associating the detections corresponding to same object over time
+		
+		![Example of tracking object](img01/objtr/object_tracking.bmp)
 		</section>
 		
 		<section data-markdown>
-		### Object Tracking
+		### Problems of Object Tracking
+
+		* Noise in frame
+		* Loss of information caused by 3D world on a 2D image
+		* Changes of illumination
+		* Complex object shapes
+		* Multiple objects
+		* etc
+		</section>
 		
-		TODO: Add application's samples 2
-		</section>		
+		<section data-markdown>
+		### Detecting objects in frame
+		Every tracking method requires an object detection mechanism either in every frame or when the object first appears in the video.
+		1. Detection with algorithms of computer vision
+			* Point detector (Harris, SIFT)
+			* Supervised Learning (SVM, CNN and enc)	
+		1. Detection based on object's color
+		1. Manual selection of object
+
+		</section>
+
+		<section data-markdown>
+		### Associating the detections corresponding to the same object over time
+		#### Methods:
+		* Absolute difference of neighbor frames
+		* Lucas–Kanade method
+		* Detection objects in each frame
+		* ...
+		
+		![Tracking object](img01/objtr/color_tr.png)
+		</section>
+
+		<section data-markdown>
+		### Absolute difference of neighbor frames
+
+		![Absolute difference](img01/objtr/ad.png)
+		</section>
+
+		<section data-markdown>
+		### Lucas–Kanade method
+		Lucas–Kanade method is a widely used differential method for optical flow estimation. 
+		
+		![Lucas–Kanade Method](img01/objtr/lk_method.jpg)
+		</section>
+	
+		<section data-markdown>
+		### Detection objects in each frame		
+		Objects detected in consecutive frames are represented by points, and the association of the points is based on previous object state which can include object potion and motion.
+		</section>	
 	</section>
 	
 	<section>
