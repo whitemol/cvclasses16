@@ -23,15 +23,116 @@
 	<section>
 		<section data-markdown>
 		### Image Segmentation
-		
-		TODO: Add application's samples
+
+		In computer vision, image segmentation is the process of partitioning a digital image into 
+		multiple segments (sets of pixels, also known as super-pixels).
+
+		![An example of relativity of segmentation](img01/imseg/start.png)
+		</section>
+        
+		<section data-markdown>
+		### First objective
+
+		The first objective is to decompose the image into parts for further analysis.
+		In simple cases, the environment might be well enough controlled
+		so that the segmentation process reliably extracts only the parts that
+		need to be analyzed further.
+        </section>
+        
+        <section data-markdown>
+		### Second objective
+
+		The second objective of segmentation is to perform a change of representation. 
+		The pixels of the image must be organized into higher-level units that are 
+		either more meaningful or more effcient for further analysis (or both).
+        </section>
+        
+		<section data-markdown>
+		### Methods
+
+		Some of the main methods of image segmentation are:
+
+		-	Thresholding
+		-	Clustering methods
+		-	Histogram-based methods
+		-	Edge detection
+		-	Region-growing methods
+		-	Graph partitioning methods
+		-	Watershed transformation
+		-	Semi-automatic segmentation
+		-	Trainable segmentation
+		-	...
+        </section>	
+
+        <section data-markdown>
+		### Applications
+
+		Some of the practical applications of image segmentation are:
+
+		- Content-based image retrieval
+		- Machine vision
+		- Medical imaging
+		- Object detection
+		- Recognition Tasks
+		- Traffic control systems
+		- Video surveillance
+		- ...
+
+		Several general-purpose algorithms and techniques have been developed for image segmentation.
+		To be useful, these techniques must typically be combined with a domain's specific knowledge
+		in order to effectively solve the domain's segmentation problems.
+		</section>
+        
+        <section data-markdown>
+		### Problems
+
+		- Segmentation benchmarking
+		- The lack of universal descriptors and methods
+		- Noised images
+		- ...
 		</section>
 		
 		<section data-markdown>
-		### Image Segmentation
+		### Segmentation benchmarking
+
+		Several segmentation benchmarks are available for comparing the performance of segmentation methods 
+		with the state-of-the-art segmentation methods on standardized sets:
+
+		- Prague On-line Texture Segmentation Benchmark
+		- The Berkeley Segmentation Dataset and Benchmark
+		</section>
 		
-		TODO: Add application's samples 2
-		</section>		
+		<section data-markdown>
+		### The lack of universal descriptors and methods
+
+		The main problem is the lack of universal descriptors. 
+		The segmentation in itself is quite simple, but the lack of meaningful descriptors complicates the task of segmentation.
+		</section>
+        
+        <section data-markdown>
+        ### An example of relativity of segmentation
+        
+        ![An example of relativity of segmentation](img01/imseg/example.png)
+		</section>
+        
+        <section data-markdown>
+        ### Watershed based segmentation
+        
+        ![Watershed based segmentation](img01/imseg/watershed.jpg)
+		</section>
+        
+        <section data-markdown>
+        ### Segmentation using k-means clustering
+        
+        ![Segmentation using k-means clustering](img01/imseg/kmean.jpg)
+		</section>
+        
+        <section data-markdown>
+        ### Thresholding methods such as Otsu's method
+        
+        ![Thresholding methods such as Otsu's method](img01/imseg/otsy.jpg)
+		</section>
+        
 	</section>
 	
 	<section>
