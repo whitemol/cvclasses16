@@ -15,6 +15,10 @@ public:
 	///@brief Launch demonstration for passed image
 	void Show();
 
+	///@brief Initialize writing file
+	int InitFrameWriter(const std::string& file_name, const int& video_codec,
+	                    const double& video_fps, const cv::Size& frame_size);
+
 	///@brief Returns the string with full name of this detector
 	static cv::String ReplyName()
 	{
@@ -36,7 +40,10 @@ private:
 	};
 
 	///@brief applies algorithm according to the passed data
-	void processFrame() const;
+	void processFrame();
+
+	///@brief Write frame to the file
+	void writeFrame(const cv::Mat& frame);
 
 	///@brief Mouse handler
 	static void onMouse(int event, int x, int y, int flags, void* param);
@@ -48,4 +55,7 @@ private:
 
 	static const cv::Point sc_invalidMousePosition;
 	std::pair<cv::Point, cv::Point> m_mouseLine;
+
+	cv::VideoWriter frameWriter;
+	cv::Size frameSize;
 };

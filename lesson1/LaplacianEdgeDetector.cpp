@@ -49,7 +49,30 @@ void LaplacianEdgeDetector::Show()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void LaplacianEdgeDetector::processFrame() const
+int LaplacianEdgeDetector::InitFrameWriter(const std::string& file_name,
+                                           const int& video_codec,
+                                           const double& video_fps,
+                                           const cv::Size& frame_size)
+{
+	try {
+		frameWriter.open(file_name, video_codec, video_fps, frame_size, false);
+	} catch(...) {
+		std::cerr << "Incorrect parameters for frameWriter." << std::endl;
+		return -1;
+	}
+
+	if (!frameWriter.isOpened()) {
+		std::cerr << "Error creating file " << file_name << std::endl;
+		return -2;
+	}
+
+	frameSize = frame_size;
+
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LaplacianEdgeDetector::processFrame()
 {
 	cv::Mat srcImage;
 	(*m_context.videoCapture) >> srcImage;
@@ -99,7 +122,29 @@ void LaplacianEdgeDetector::processFrame() const
 		cv::arrowedLine(abs_dst, m_mouseLine.first, m_mouseLine.second, 255, 5);
 	}
 
+	/// Write Frame to file
+	writeFrame(abs_dst);
+
 	cv::imshow(sc_windowName, abs_dst);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+void LaplacianEdgeDetector::writeFrame(const cv::Mat& frame)
+{
+	if (!frameWriter.isOpened())
+		return;
+
+	cv::Mat buffer;
+	resize(frame, buffer, frameSize, 0, 0, cv::INTER_CUBIC);
+
+	const std::string message =
+	        "GKernel: " + std::to_string(m_context.gaussianKernelSize) + ", " +
+	        "LKernel: " + std::to_string(m_context.laplacianKernelSize);
+	const auto messTextSize = cv::getTextSize(message, CV_FONT_ITALIC, 0.8, 1, nullptr);
+
+	cv::putText(buffer, message, {10, 10 + messTextSize.height}, CV_FONT_ITALIC, 0.8, 255);
+
+	frameWriter.write(buffer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
