@@ -29,14 +29,14 @@ Please ensure you have following instruments and settings to start the work:
 Please feel free to leave your feedback about lecture, home task or course overall via [anonymous feedback form (in russian)](https://goo.gl/forms/SIh8KT44qVoxnD453).
 
 ## Topics
-### 1. Introduction into CV
+### [1. Introduction into CV](https://cvlabmiet.github.io/cvclasses16/lectures/lecture.html?01)
 Organizational questions, course plan and basics of the OpenCV library.
 
-### 2. Image Segmentation
+### [2. Image Segmentation](https://cvlabmiet.github.io/cvclasses16/lectures/lecture.html?02)
 Overview and discussion of set of widely-used image segmentation approaches and algorithms, how to test and verify them and public testing images databases.
 
-### 3. Edge Detection
-TODO
+### [3. Edge Detection](https://cvlabmiet.github.io/cvclasses16/lectures/lecture.html?03)
+Overview and discussion of set of edge detection algorithms based on 1st, 2nd derivative and Canny. How to test and verify them and public testing images databases.
 
 ### 4. Movement Detection
 TODO
