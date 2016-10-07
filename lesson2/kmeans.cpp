@@ -39,7 +39,7 @@ const cv::String keys =
     ;
 
 
-cv::Mat img;
+cv::Mat showed_img;
 std::vector<cv::Point> centers;
 std::vector<double> centers_color;
 size_t work_counter = 0;
@@ -47,21 +47,21 @@ size_t work_counter = 0;
 //////////////////////////////////////////////////////////////////////////////
 static void onMouse(int event, int x, int y, int, void*)
 {
-	if (x < 0 || x >= img.cols || y < 0 ||
-	    y >= img.rows || event != cv::EVENT_LBUTTONDOWN)
+	if (x < 0 || x >= showed_img.cols || y < 0 ||
+	    y >= showed_img.rows || event != cv::EVENT_LBUTTONDOWN)
 		return;
 
 	if (centers.size() == MAX_CLUSTERS) {
 		const std::string message = "n_clusters <= " + std::to_string(MAX_CLUSTERS);
 		const auto messTextSize = cv::getTextSize(message, CV_FONT_ITALIC, 0.8, 1, nullptr);
-		cv::putText(img, message, {10, 10 + messTextSize.height}, CV_FONT_ITALIC, 0.8, 255);
+		cv::putText(showed_img, message, {10, 10 + messTextSize.height}, CV_FONT_ITALIC, 0.8, 255);
 	} else {
 		cv::Point point(x, y);
-		cv::circle(img, point, 5, 255, CV_FILLED);
+		cv::circle(showed_img, point, 5, 255, CV_FILLED);
 		centers.push_back(point);
 	}
 
-	imshow(CLS_IMG, img);
+	imshow(CLS_IMG, showed_img);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -269,8 +269,8 @@ int kmeans(int argc, char** argv)
 	}
 
 	while (true) {
-		input_image.copyTo(img);
-		imshow(CLS_IMG, img);
+		input_image.copyTo(showed_img);
+		imshow(CLS_IMG, showed_img);
 		cv::setMouseCallback(CLS_IMG, onMouse, 0);
 
 		auto key = cv::waitKey();
