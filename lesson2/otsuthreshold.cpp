@@ -100,7 +100,7 @@ void calc_threshold() {
   for (int t = static_cast<int>(threshold_value + 1); t < 256; t++) {
 
     wB += img_hist.at<float>(t); // Weight Background
-    if (wB == 0)
+    if (wB == 0 || img_hist.at<float>(t) == 0)
       continue;
 
     wF = img_gray.total() - wB; // Weight Foreground
@@ -120,8 +120,6 @@ void calc_threshold() {
       varMax = varBetween;
       threshold_value = t;
       iter_counter++;
-      make_result();
-      show_result();
       break;
     }
 
@@ -129,13 +127,16 @@ void calc_threshold() {
       flag_end = true;
     }
   }
-  
+
   // End
   end = chrono::system_clock::now();
   elapsed_time += chrono::duration_cast<chrono::milliseconds>(end - start).count();
-  
+
   cout << "Iteration number" << iter_counter << ". All elapsed time is: " <<
     elapsed_time / 1000. << "seconds." << endl;
+
+  make_result();
+  show_result();
 }
 
 void init_otsu_values() {
@@ -152,6 +153,10 @@ void init_otsu_values() {
 void init_values(Mat input_image) {
   cvtColor(input_image, img_gray, COLOR_RGB2GRAY);
 
+  chrono::time_point<chrono::system_clock> start, end;
+
+  start = chrono::system_clock::now();
+
   int histSize = 256;
   float range[] = { 0, 256 };
   const float* histRange = { range };
@@ -162,6 +167,13 @@ void init_values(Mat input_image) {
     sum_hist += t * img_hist.at<float>(t);
 
   init_otsu_values();
+
+  // End
+  end = chrono::system_clock::now();
+  elapsed_time += chrono::duration_cast<chrono::milliseconds>(end - start).count();
+
+  cout << "Init algorithm values. All elapsed time is: " <<
+    elapsed_time / 1000. << "seconds." << endl;
 }
 
 int otsu(int argc, char** argv) {
