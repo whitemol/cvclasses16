@@ -76,7 +76,7 @@ void init_centers(const cv::Mat &image, const size_t &def_nclusters)
 	}
 
 	for (const auto &point : centers)
-		centers_color.push_back(image.at<uint8_t>(point.y, point.x, 0));
+		centers_color.push_back(image.at<uint8_t>(point.y, point.x));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ double get_distance(const cv::Mat &image, const size_t &i,
 	for (size_t ci = 0; ci < centers.size(); ++ci) {
 		double temp_distance = 0;
 
-		double pixel_color = image.at<uint8_t>(i, j, 0);
+		double pixel_color = image.at<uint8_t>(i, j);
 		double center_color = centers_color[ci];
 
 		// Weight of distance
@@ -183,7 +183,7 @@ void clustering(const cv::Mat &input_image,
 
 				counter[cluster_num]++;
 				new_centers[cluster_num] += cv::Point(j, i);
-				new_color[cluster_num] += gray_image.at<uint8_t>(i, j, 0);
+				new_color[cluster_num] += gray_image.at<uint8_t>(i, j);
 			}
 		}
 
