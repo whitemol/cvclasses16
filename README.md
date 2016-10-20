@@ -38,8 +38,8 @@ Overview and discussion of set of widely-used image segmentation approaches and 
 ### [3. Edge Detection](https://cvlabmiet.github.io/cvclasses16/lectures/lecture.html?03)
 Overview and discussion of set of edge detection algorithms based on 1st, 2nd derivative and Canny. How to test and verify them and public testing images databases.
 
-### 4. Movement Detection
-TODO
+### [4. Movement Detection](https://docs.google.com/presentation/d/1SyV2twSszFiK38tU2Ui78TJq3PnJQgMjcb_cKNMKL4U/pub)
+Overview and discussion of set of basic background subtraction non-recoursive (Mean/Median Filter) and recoursive (MinMax, 1G, GMM, etc.) algorithms. How to test and verify them and public testing images databases.
 
 ### 5. Feature Detection
 TODO
