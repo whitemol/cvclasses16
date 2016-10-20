@@ -100,6 +100,7 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="gmm.cpp" />
     <ClCompile Include="kmeans.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="watershed.cpp">
