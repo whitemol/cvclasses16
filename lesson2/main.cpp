@@ -40,7 +40,7 @@ private:
 };
 
 // Declaration of Demo functions implemented in separate unit
-int iterOptThreshold(int, char**) { return 0; /*TODO: implement in separate file*/ }
+int iterOptThreshold(int, char**);
 int otsu(int, char**);
 int gmm(int, char**);
 int regionGrowing(int, char**) { return 0; /*TODO: implement in separate file*/ }
