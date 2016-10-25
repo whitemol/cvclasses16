@@ -44,7 +44,7 @@ int iterOptThreshold(int, char**);
 int otsu(int, char**);
 int gmm(int, char**);
 int regionGrowing(int, char**) { return 0; /*TODO: implement in separate file*/ }
-int splitAndMerge(int, char**) { return 0; /*TODO: implement in separate file*/ }
+int splitAndMerge(int, char**);
 int watershed(int, char**);		/*TODO: modify to interactive demo*/
 int kmeans(int, char**);		/*TODO: modify to interactive demo for images*/
 int gabortexture(int, char**) { return 0; /*TODO: implement in separate file*/ }
