@@ -3,211 +3,178 @@
 ///@Author: Roman Golovanov
 ///@Date: 08 September 2015
 
+
 #include "stdafx.h"
 
 #include <iostream>
 #include <stdio.h>
-#include <string.h>
-#include <map>
 #include <functional>
+#include <fstream>
 
 #include "opencv2/highgui.hpp"
 #include "opencv2/opencv.hpp"
 
-const std::string c_origWindowName = "Original Picture";
-const std::string c_edgeWindowName = "Edge Picture";
 
-int g_threshold = 50;
-int g_operatorId = 0;
-std::pair<int, int> g_lastThOp = { -1, -1 };
+enum FILTER_TYPE { PREWITT, DOG };
+float prewitt_mask_fx[] = { -1, 0, 1,
+							-1, 0, 1,
+							-1, 0, 1 };
+float prewitt_mask_fy[] = { -1, -1, -1,
+							 0,  0,  0,
+							 1,  1,  1 };
+float dog_mask[] = { -0.0151, 0.0026, 0.0184, 0.0243, 0.0184, 0.0026, -0.0151,
+					0.0026, 0.0300, 0.0380, 0.0310, 0.0380, 0.0300, 0.0026,
+					0.0184, 0.0380, -0.0275, -0.1020, -0.0275, 0.0380, 0.0184,
+					0.0243, 0.0310, -0.1020, -0.2355, -0.1020, 0.0310, 0.0243,
+					0.0184, 0.0380, -0.0275, -0.1020, -0.0275, 0.0380, 0.0184,
+					0.0026, 0.0300, 0.0380, 0.0310, 0.0380, 0.0300, 0.0026,
+					-0.0151, 0.0026, 0.0184, 0.0243, 0.0184, 0.0026, -0.0151 };
 
-///@brief Edge operator specification
-struct EdgeOperator
+
+void apply1stDerivativeAlgo(cv::Mat& i_img, cv::Mat& o_edges, int i_threshold, FILTER_TYPE i_type)
 {
-   std::string Name;
-   float fx[3*3]; // kernel for horizontal derivation
-   float fy[3*3]; // kernel for vertical derivation
-};
+	cv::Mat dX, dY, dMag;
 
-const std::string LoGName = "LoG";
-const std::string CannyName = "Canny";
-
-///@brief array of edge operators
-std::vector<EdgeOperator> g_operatorSpec = {
-   EdgeOperator{ "Robert\'s",       { -1,  1, 0 , 0, 0, 0, 0, 0, 0 },
-                                    { -1,  0, 0,  1, 0, 0, 0, 0, 0 } },
-   EdgeOperator{ "Robert\'s Cross", { -1,  0, 0 , 0, 1, 0, 0, 0, 0 },
-                                    {  0, -1, 0,  1, 0, 0, 0, 0, 0 } },
-   EdgeOperator{ "Prewitt",         { -1,  0,  1, -1, 0, 1, -1, 0, 1 },
-                                    { -1, -1, -1,  0, 0, 0,  1, 1, 1 } },
-   EdgeOperator{ "Sobel",           { -1,  0,  1, -2, 0, 2, -1, 0, 1 },
-                                    { -1, -2, -1,  0, 0, 0,  1, 2, 1 } },
-   EdgeOperator{ "Scharr",          { -3,   0,  3, -10, 0, 10, -3,  0, 3},
-                                    { -3, -10, -3,   0, 0,  0,  3, 10, 3} },
-   EdgeOperator{ LoGName,           { 1,  1, 1 , 1, -8, 1, 1, 1, 1 },
-                                    { 0,  0, 0,  0,  0, 0, 0, 0, 0 } },
-   EdgeOperator{ CannyName },
-};
-
-/////////////////////////////////////////////////////////////////////
-void apply1stDerivativeAlgo(cv::Mat& i_img, EdgeOperator& i_oper, cv::Mat& o_edges)
-{
-   cv::Mat imgX;
-   cv::filter2D(i_img, imgX, CV_32F, cv::Mat(3, 3, CV_32F, i_oper.fx));
-
-   cv::Mat imgY;
-   cv::filter2D(i_img, imgY, CV_32F, cv::Mat(3, 3, CV_32F, i_oper.fy));
-
-   cv::Mat imgMag;
-   cv::magnitude(imgX, imgY, imgMag);
-
-   double maxVal = 0;
-   cv::minMaxLoc(imgMag, nullptr, &maxVal);
-
-   cv::threshold(imgMag, o_edges, 0.01 * g_threshold * maxVal, 1, CV_THRESH_BINARY);
-}
-
-/////////////////////////////////////////////////////////////////////
-void apply2ndDerivativeAlgo(cv::Mat& i_img, EdgeOperator& i_oper, cv::Mat& o_edges)
-{
-   cv::Mat log;
-   cv::filter2D(i_img, log, CV_32F, cv::Mat(3, 3, CV_32F, i_oper.fx));
-
-   double minVal = 0;
-   double maxVal = 0;
-   cv::minMaxLoc(log, &minVal, &maxVal);
-   const double th = 0.01 * g_threshold * (std::max)(maxVal, std::abs(minVal));
-
-   o_edges = cv::Mat::zeros(log.size(), log.type());
-
-   for (int x = 1; x < log.cols - 1; ++x)
-   {
-      for (int y = 1; y < log.rows - 1; ++y)
-      {
-         const cv::Mat nghb = log.colRange({ x - 1, x + 2 }).rowRange({ y - 1, y + 2 });
-
-         if (nghb.at<float>(0, 0) * nghb.at<float>(2, 2) < 0 && std::abs(nghb.at<float>(0, 0) - nghb.at<float>(2, 2)) > th ||
-            nghb.at<float>(1, 0) * nghb.at<float>(1, 2) < 0 && std::abs(nghb.at<float>(1, 0) - nghb.at<float>(1, 2)) > th ||
-            nghb.at<float>(2, 0) * nghb.at<float>(0, 2) < 0 && std::abs(nghb.at<float>(2, 0) - nghb.at<float>(0, 2)) > th ||
-            nghb.at<float>(2, 1) * nghb.at<float>(0, 1) < 0 && std::abs(nghb.at<float>(2, 1) - nghb.at<float>(0, 1)) > th)
-         {
-            o_edges.at<float>(y, x) = 1.0;
-         }
-      }
-   }
-}
-
-///@brief provides frame processing
-void processFrame(cv::Mat& i_image)
-{
-   if (g_lastThOp == std::make_pair(g_threshold, g_operatorId))
-   {
-      return; // nothing changed
-   }
-
-   g_lastThOp = { g_threshold, g_operatorId };
-
-   auto& oper = g_operatorSpec[g_operatorId];
-
-   cv::imshow(c_origWindowName, i_image);
-   
-   cv::Mat gray;
-   cv::cvtColor(i_image, gray, CV_RGB2GRAY);
-
-   cv::Mat edges;
-   if (oper.Name == CannyName)
-   {
-      cv::Canny(gray, edges, g_threshold, g_threshold / 2);
-   }
-   else if(oper.Name == LoGName)
-   {
-      apply2ndDerivativeAlgo(gray, oper, edges);
-   }
-   else
-   {
-      apply1stDerivativeAlgo(gray, oper, edges);
-   }
-
-   const int bufSize = 100;
-   char chint[bufSize];
-   sprintf_s(chint, bufSize, "%s Operator, %d", oper.Name.data(), g_threshold);
-   std::string shint{ chint };
-   const auto txtSize = cv::getTextSize(shint, CV_FONT_HERSHEY_PLAIN, 1.0, 1, nullptr);
-   cv::putText(edges, shint, { 10, 10 + txtSize.height }, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0);
-
-   cv::imshow(c_edgeWindowName, edges);
-}
-
-///@brief provides video capturing from the camera and frame processing
-void processVideo()
-{
-	cv::VideoCapture capture(0);
-	if (!capture.isOpened())
+	switch (i_type)
 	{
-		std::cerr << "Can not open the camera !" << std::endl;
-		return;
+	case PREWITT:
+		cv::filter2D(i_img, dX, CV_32F, cv::Mat(3, 3, CV_32F, prewitt_mask_fx));
+		cv::filter2D(i_img, dY, CV_32F, cv::Mat(3, 3, CV_32F, prewitt_mask_fy));
+		cv::magnitude(dX, dY, dMag);
+		break;
+
+	default:
+		std::cerr << "unsupported filter type" << std::endl;
 	}
 
-	while (cv::waitKey(1) < 0)
+	double maxVal = 0;
+	cv::minMaxLoc(dMag, nullptr, &maxVal);
+	const double th = 0.01 * i_threshold * maxVal;
+	cv::threshold(dMag, o_edges, th, 255, CV_THRESH_BINARY);
+}
+
+
+void apply2ndDerivativeAlgo(cv::Mat& i_img, cv::Mat& o_edges, int i_threshold, FILTER_TYPE i_type)
+{
+	cv::Mat deriv2;
+
+	switch (i_type)
 	{
-		cv::Mat frame;
-		capture.read(frame);
-		processFrame(frame);
+	case DOG:
+		cv::filter2D(i_img, deriv2, CV_32F, cv::Mat(7, 7, CV_32F, dog_mask));
+		break;
+
+	default:
+		std::cerr << "unsupported filter type" << std::endl;
+	}
+
+	double minVal = 0, maxVal = 0;
+	cv::minMaxLoc(deriv2, &minVal, &maxVal);
+	const double th = 0.01 * i_threshold * (std::max)(maxVal, std::abs(minVal));
+	o_edges = cv::Mat::zeros(deriv2.size(), CV_8U);
+	for (int x = 1; x < deriv2.rows - 1; ++x)
+	{
+		for (int y = 1; y < deriv2.cols - 1; ++y)
+		{
+			const cv::Mat nghb = deriv2.rowRange({ x - 1, x + 2 }).colRange({ y - 1, y + 2 });
+
+			if (nghb.at<float>(0, 0) * nghb.at<float>(2, 2) < 0 && std::abs(nghb.at<float>(0, 0) - nghb.at<float>(2, 2)) > th ||
+				nghb.at<float>(1, 0) * nghb.at<float>(1, 2) < 0 && std::abs(nghb.at<float>(1, 0) - nghb.at<float>(1, 2)) > th ||
+				nghb.at<float>(2, 0) * nghb.at<float>(0, 2) < 0 && std::abs(nghb.at<float>(2, 0) - nghb.at<float>(0, 2)) > th ||
+				nghb.at<float>(2, 1) * nghb.at<float>(0, 1) < 0 && std::abs(nghb.at<float>(2, 1) - nghb.at<float>(0, 1)) > th)
+			{
+				o_edges.at<uchar>(x, y) = 255;
+			}
+		}
 	}
 }
 
-///@brief provides image file processing
-bool processImage(const std::string& i_name)
+
+void quality_metric(cv::Mat& i_edges, cv::Mat& i_manual, double* o_precision, double* o_recall)
 {
+	int fp = 0, fn = 0, tp = 0, tn = 0;
+	for (int x = 0; x < i_edges.rows; x++)
+	{
+		for (int y = 0; y < i_edges.cols; y++)
+		{
+			if (i_manual.at<uchar>(x, y) == 255)
+			{
+				if (i_edges.at<uchar>(x, y) == 255)
+					tp++;
+				else
+					fp++;
+			}
+			else
+			{
+				if (i_edges.at<uchar>(x, y) == 255)
+					fn++;
+				else
+					tn++;
+			}
 
-   cv::Mat img0 = cv::imread(i_name, 1);
-   if (img0.empty())
-   {
-      std::cerr << "Couldn'g open image " << i_name << ". Usage: lesson3 <image_name>\n";
-      return false;
-   }
-
-   while (cv::waitKey(1) < 0)
-   {
-      cv::Mat frame;
-      processFrame(img0);
-   }
-
-   return true;
+		}
+	}
+	*o_precision = tp / double(tp + fp);
+	*o_recall = tp / double(tp + fn);
 }
 
-void trackBarCallBack(int, void*)
+
+void processFrame(cv::Mat& i_image, cv::Mat& i_manual, int i_threshold, std::ofstream& i_output)
 {
-   printf("Operator: %s; Threshold: %d\n", g_operatorSpec[g_operatorId].Name.data(), g_threshold);
+	cv::Mat edges;
+	const int bufSize = 100;
+	char buffer[bufSize];
+	double precision = 0, recall = 0;
+
+	apply1stDerivativeAlgo(i_image, edges, i_threshold, PREWITT);
+	edges.convertTo(edges, CV_8U);
+	quality_metric(edges, i_manual, &precision, &recall);
+	i_output << i_threshold << " " << precision << " " << recall << std::endl;
+
+	sprintf_s(buffer, bufSize, "prewitt_%d.bmp", i_threshold);
+	cv::imwrite(buffer, edges);
+
+	apply2ndDerivativeAlgo(i_image, edges, i_threshold, DOG);
+	quality_metric(edges, i_manual, &precision, &recall);
+	i_output << i_threshold << " " << precision << " " << recall << std::endl;
+
+	sprintf_s(buffer, bufSize, "dog_%d.bmp", i_threshold);
+	cv::imwrite(buffer, edges);
 }
 
-///@brief Entry point
-int _tmain(int argc, char** argv)
+
+int main(int argc, char** argv)
 {
-   cv::CommandLineParser parser(argc, argv, "{ help h |  | }"
-                                            "{ @input |  | }");
-   if (parser.has("help"))
-   {
-      parser.printMessage();
-      return 0;
-   }
-   const auto& fileName = parser.get<std::string>("@input");
+	cv::CommandLineParser parser(argc, argv, "{ help h   |              | }"
+											 "{ image    | original.bmp | }"
+											 "{ edges    | edges.bmp    | }");
+	if (parser.has("help"))
+	{
+		std::cout << "Usage: lesson3 <image_name> <edge_name>" << std::endl;
+		return 0;
+	}
 
-   /// Create window with original image
-   cv::namedWindow(c_origWindowName, CV_WINDOW_NORMAL);
-   cv::resizeWindow(c_origWindowName, 640, 480);
+	const auto& imageName = parser.get<std::string>("image");
+	const auto& edgesName = parser.get<std::string>("edges");
 
-   /// Create DEMO window
-   cv::namedWindow(c_edgeWindowName, CV_WINDOW_NORMAL);
-   cv::resizeWindow(c_edgeWindowName, 640, 480);
+	cv::Mat image = cv::imread(imageName, CV_LOAD_IMAGE_GRAYSCALE);
+	if (image.empty())
+	{
+		std::cerr << "Couldn'g open image " << imageName << ". Usage: lesson3 <image_name> <edge_name>" << std::endl;
+		return -1;
+	}
 
-   cv::createTrackbar("Threshold", c_edgeWindowName, &g_threshold, 100, trackBarCallBack);
-   cv::createTrackbar("Operator",  c_edgeWindowName, &g_operatorId, g_operatorSpec.size() - 1, trackBarCallBack);
+	cv::Mat edges = cv::imread(edgesName, CV_LOAD_IMAGE_GRAYSCALE);
+	if (edges.empty())
+	{
+		std::cerr << "Couldn'g open image " << edges << ". Usage: lesson3 <image_name> <edge_name>" << std::endl;
+		return -1;
+	}
 
-   if (!processImage(fileName))
-   {
-      processVideo();
-   }
+	std::ofstream output("out.txt");
+	for (int th = 0; th < 100; th += 20)
+		processFrame(image, edges, th, output);
+	output.close();
 
 	return 0;
 }
