@@ -1,8 +1,3 @@
-///@File: ISegmentMotion.cpp
-///@Brief: Contains implementation of interface for SegmentMotion classes
-///@Author: Vitaliy Baldeev
-///@Date: 12 October 2015
-
 #include "SegmentMotionBase.h"
 
 #include <iostream>
@@ -10,62 +5,59 @@
 #include "opencv2\video\video.hpp"
 #include "opencv2\highgui\highgui.hpp"
 
-#include "SegmentMotionDiff.h"
-#include "SegmentMotionBU.h"
-#include "SegmentMotionGMM.h"
-#include "SegmentMotionMinMax.h"
-#include "SegmentMotion1G.h"
+#include "SegmentMotionMeanFilter.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-void SegmentMotionBase::Run()
+void SegmentMotionBase::Run(const std::string &video_file)
 {
-    cv::VideoCapture capture(0);
+  cv::VideoCapture capture;
+  cv::VideoWriter outputVideo;
 
-    if (!capture.isOpened())
-    {
-        std::cerr << "Can not open the camera !" << std::endl;
-        exit(-1);
-    }
+  try {
+    capture.open(video_file);
+    outputVideo.open(std::string("result.avi"), CV_FOURCC('M', 'J', 'P', 'G'), 30.0, { 800, 548 });
+  }
+  catch (...) {
+    std::cerr << "Incorrect parameters for frameWriter." << std::endl;
+    exit(-1);
+  }
 
-    createGUI();
 
-    while (true)
-    {
-        m_foreground = process(capture);
-        cv::imshow(GetName(), m_foreground);
+  if (!capture.isOpened()) {
+    std::cerr << "Can not open the camera !" << std::endl;
+    exit(-1);
+  }
 
-        if (cv::waitKey(1) >= 0)
-        {
-            break;
-        }
-    }
+  createGUI();
+
+  cv::Mat frame;
+
+  while (true) {
+    capture >> frame;
+
+    if (frame.empty())
+      break;
+
+    m_foreground = process(frame);
+    cv::imshow(GetName(), m_foreground);
+
+    cv::Mat buf(frame.rows, frame.cols, CV_8UC3);
+
+    cv::cvtColor(m_foreground, buf, cv::COLOR_GRAY2BGR);
+
+    outputVideo.write(buf);
+
+    if (cv::waitKey(1) >= 0)
+      break;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 SegmentMotionBase* SegmentMotionBase::CreateAlgorithm(std::string& algorithmName)
 {
-    if (algorithmName == "Diff")
-    {
-        return new SegmentMotionDiff();
-    }
-    else if (algorithmName == "BU")
-    {
-        return new SegmentMotionBU();
-    }
-    else if (algorithmName == "GMM")
-    {
-        return new SegmentMotionGMM();
-    }
-    else if (algorithmName == "MM")
-    {
-        return new SegmentMotionMinMax();
-    }
-	else if (algorithmName == "1G")
-	{
-		return new SegmentMotion1G();
-	}
-    else
-    {
-        return nullptr;
+    if (algorithmName == "MM") {
+      return new SegmentMotionMeanFilter();
+    } else {
+      return nullptr;
     }
 }

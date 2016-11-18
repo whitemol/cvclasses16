@@ -18,51 +18,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SegmentMotionDiff.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SegmentMotionBU.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SegmentMotionGMM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SegmentMotionBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SegmentMotionMinMax.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SegmentMotion1G.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ViBe.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ViBeDemo.cpp">
+    <ClCompile Include="SegmentMotionMeanFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SegmentMotionDiff.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SegmentMotionBU.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SegmentMotionGMM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SegmentMotionBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SegmentMotionMinMax.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SegmentMotion1G.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ViBe.h">
+    <ClInclude Include="SegmentMotionMeanFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

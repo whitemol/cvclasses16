@@ -29,7 +29,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -153,24 +153,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="SegmentMotion1G.cpp" />
     <ClCompile Include="SegmentMotionBase.cpp" />
-    <ClCompile Include="SegmentMotionBU.cpp" />
-    <ClCompile Include="SegmentMotionDiff.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="SegmentMotionGMM.cpp" />
-    <ClCompile Include="SegmentMotionMinMax.cpp" />
-    <ClCompile Include="ViBe.cpp" />
-    <ClCompile Include="ViBeDemo.cpp" />
+    <ClCompile Include="SegmentMotionMeanFilter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SegmentMotion1G.h" />
     <ClInclude Include="SegmentMotionBase.h" />
-    <ClInclude Include="SegmentMotionBU.h" />
-    <ClInclude Include="SegmentMotionDiff.h" />
-    <ClInclude Include="SegmentMotionGMM.h" />
-    <ClInclude Include="SegmentMotionMinMax.h" />
-    <ClInclude Include="ViBe.h" />
+    <ClInclude Include="SegmentMotionMeanFilter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

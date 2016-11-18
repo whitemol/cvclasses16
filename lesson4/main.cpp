@@ -1,44 +1,18 @@
-///@File: main.cpp
-///@Brief: Contains interface of console application for testing background
-///        subtraction algorithms
-///@Author: Vitaliy Baldeev
-///@Date: 01 October 2015
-
 #include <iostream>
 #include <memory>
 #include <list>
 
-#include "SegmentMotionDiff.h"
-#include "SegmentMotionBU.h"
-#include "SegmentMotionGMM.h"
-#include "SegmentMotion1G.h"
+#include "SegmentMotionMeanFilter.h"
 
-void ViBeDemo();
-
-int main()
+int main(int argc, char** argv)
 {
-    std::cout << "Select the algorithm: \n"
-        << "Diff  - Basic difference \n"
-        << "BU    - Basic difference with background updating \n"
-        << "GMM   - Gaussian mixture model algorithm \n"
-        << "MM    - MinMax algoruthm \n"
-        << "1G    - One Gaussian \n"
-        << "VB    - ViBe algorithm \n";
+  if (argc != 2) {
+    std::cerr << "Set name of input video" << std::endl;
+    return -1;
+  }
 
-    std::string algorithmName;
-    std::cin >> algorithmName;
+  SegmentMotionMeanFilter proc;
+  proc.Run(argv[1]);
 
-    std::unique_ptr<SegmentMotionBase> ptr(SegmentMotionBase::CreateAlgorithm(algorithmName));
-
-    if (ptr)
-    {
-        ptr->Run();
-    }
-    else
-    {
-        std::cout << "Run ViBe by default" << std::endl;
-        ViBeDemo();
-    }
-
-    return 0;
+  return 0;
 }
