@@ -12,6 +12,7 @@
 #include "SegmentMotionBU.h"
 #include "SegmentMotionGMM.h"
 #include "SegmentMotion1G.h"
+#include "SegmentMotionMedian.h"
 
 void ViBeDemo();
 
@@ -23,22 +24,26 @@ int main()
         << "GMM   - Gaussian mixture model algorithm \n"
         << "MM    - MinMax algoruthm \n"
         << "1G    - One Gaussian \n"
-        << "VB    - ViBe algorithm \n";
-
+        << "VB    - ViBe algorithm \n"
+		<< "Med   - Median Filtering algorithm\n";
     std::string algorithmName;
-    std::cin >> algorithmName;
-
+	std::cin >> algorithmName;
     std::unique_ptr<SegmentMotionBase> ptr(SegmentMotionBase::CreateAlgorithm(algorithmName));
-
     if (ptr)
     {
-        ptr->Run();
+		std::cout << "enter video source (0 = camera)" << std::endl;
+		std::string video_source;
+		std::cin >> video_source;
+		if (video_source == "0")
+			ptr->Run();
+		else
+			ptr->Run(video_source);
     }
-    else
-    {
-        std::cout << "Run ViBe by default" << std::endl;
-        ViBeDemo();
-    }
+	else
+	{
+		std::cout << "Run ViBe by default" << std::endl;
+		ViBeDemo();
+	}
 
     return 0;
 }

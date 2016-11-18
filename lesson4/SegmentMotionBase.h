@@ -21,6 +21,7 @@ class SegmentMotionBase
 public:
     ///@brief Launch demonstration
     void Run();
+	void Run(std::string in_source_name);
 
         ///@brief Factory method
     static SegmentMotionBase* CreateAlgorithm(std::string& algorithmName);
