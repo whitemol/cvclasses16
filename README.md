@@ -41,11 +41,11 @@ Overview and discussion of set of edge detection algorithms based on 1st, 2nd de
 ### [4. Movement Detection](https://docs.google.com/presentation/d/1SyV2twSszFiK38tU2Ui78TJq3PnJQgMjcb_cKNMKL4U/pub)
 Overview and discussion of set of basic background subtraction non-recoursive (Mean/Median Filter) and recoursive (MinMax, 1G, GMM, etc.) algorithms. How to test and verify them and public testing images databases.
 
-### 5. Feature Detection
-TODO
+### [5. Feature Detection](https://docs.google.com/presentation/d/1UX0OYALTE0JsMMgGBPp_ELaoPF1VqQuL5YbP3V-9gpc/edit?usp=sharing)
+Overview and discussion feature definition and properties. Corner Detection algorithms by Moravec, Haris, FAST, etc are described as wall as LoG, DoG blob detectors. 
 
-### 6. Feature Matching
-TODO
+### [6. Feature Matching](https://docs.google.com/presentation/d/1yAtW08Z6YEWdK-bmFgq6DKaSSqPr_N70MtOrCgObmYs/edit?usp=sharing)
+Overview and discussion of SIFT and SURF detectors/descriptors. Basic image transformation models (Affine, Perspective) and feature matching approaches is described.
 
 ### 7. Object Tracking
 TODO
