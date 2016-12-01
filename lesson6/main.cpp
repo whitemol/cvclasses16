@@ -1,4 +1,4 @@
-// lesson4.cpp : Defines the entry point for the console application.
+// lesson6.cpp : Defines the entry point for the console application.
 //
 
 #include "stdafx.h"
@@ -17,7 +17,9 @@ int main(int argc, char* argv[])
         << "2) SURF detector demo\n"
         << "3) FAST detector demo\n";
 
-    bool exit = false;
+    demoSIFT(argc, argv);
+
+   /* bool exit = false;
     do
     {
        int demoId = 0;
@@ -32,7 +34,7 @@ int main(int argc, char* argv[])
           break;
        }
     }
-    while (!exit);
+    while (!exit);*/
 
     system("pause");
 
