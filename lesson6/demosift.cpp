@@ -306,24 +306,26 @@ void filt_point(std::vector<std::vector<SIFTPoint>> &points,
 }
 
 
-std::tuple<double, size_t> get_hist_max(std::vector<double>& hist, SIFTPoint& point) 
+void update_rotation_point(std::vector<double>& hist, SIFTPoint& point, long& i) 
 {
-    auto max_elem_it = std::max_element(hist.begin(), hist.end());
-    auto max_elem = *max_elem_it;
-    auto max_elem_next = *(max_elem_it + 1);
-    auto max_elem_prev = *(max_elem_it - 1);
+    double prev, curr, next;
+    curr = hist[i];
+    if (i - 1 >= 0)
+        prev = hist[i - 1];
+    else
+        prev = hist[hist.size() - 1];
+    if (i + 1 < hist.size())
+        next = hist[i + 1];
+    else
+        next = hist[0];
 
-    auto dist_max = std::distance(hist.begin(), max_elem_it);
-
-    point.rotation.push_back(dist_max*10.0 +
-        ((max_elem_next - max_elem_prev) / 20.0) /
-        ((max_elem_next - 2.0 * max_elem + max_elem_prev) / 400.0));
-
-    return std::tuple<double, size_t>(max_elem, dist_max);
+    point.rotation.push_back(i*10.0 +
+        ((next - prev) / 20.0) /
+        ((next - 2.0 * curr + prev + 1e-6) / 400.0));
 }
 
 
-void calc_rotation(const cv::Mat &log, SIFTPoint &point)
+void cacl_hist(const cv::Mat &log, SIFTPoint &point, std::vector<double> &hist)
 {
     double R = 3 * init_sigma * point.sigma;
 
@@ -343,41 +345,41 @@ void calc_rotation(const cv::Mat &log, SIFTPoint &point)
     if (init_j >= log.cols - 1)
         init_j = log.cols - 2;
 
-    std::vector<double> hist(36, 0);
-
     for (size_t i = init_i; i < end_i; ++i) {
-        for (size_t j = init_j; i < end_j; ++j) {
-            double curr_R = std::sqrt(std::pow(i - point.row, 2.0) 
+        for (size_t j = init_j; j < end_j; ++j) {
+            double curr_R = std::sqrt(std::pow(i - point.row, 2.0)
                 + std::pow(j - point.col, 2.0));
             if (curr_R <= R) {
-                double theta = std::atan((log.at<uint8_t>(i, j + 1) 
-                                          - log.at<uint8_t>(i, j-1)) 
-                                         / (log.at<uint8_t>(i + 1, j)
-                                          - log.at<uint8_t>(i - 1, j)));
+                double theta = std::atan((log.at<uint8_t>(i, j + 1)
+                    - log.at<uint8_t>(i, j - 1))
+                    / (log.at<uint8_t>(i + 1, j)
+                    - log.at<uint8_t>(i - 1, j) + 1e-6));
                 double m = std::sqrt(std::pow(log.at<uint8_t>(i, j + 1)
-                                               - log.at<uint8_t>(i, j - 1), 2.0)
-                                     + std::pow(log.at<uint8_t>(i + 1, j)
-                                                 - log.at<uint8_t>(i - 1, j), 2.0) );
+                    - log.at<uint8_t>(i, j - 1), 2.0)
+                    + std::pow(log.at<uint8_t>(i + 1, j)
+                    - log.at<uint8_t>(i - 1, j), 2.0));
 
-                hist[(int)(theta / 10.0)] += m;
+                hist[(int)((theta + 3.14 / 2.0) * 180.0 / 3.14 / 10.0)] += m;
             }
         }
-
-        auto max_dist = get_hist_max(hist, point);
-        auto max_elem = std::get<0>(max_dist);
-        auto dist_max = std::get<1>(max_dist);
-
-        for (size_t i = 0; i < hist.size(); ++i) {
-            if (hist[i] > 0.8 * max_elem) {
-                if ((i != dist_max)
-                    && (i - 1 != dist_max)
-                    && (i + 1 != dist_max)) {
-                    // TODO
-                }
-            }
-        }
-
     }
+}
+
+
+void calc_rotation(const cv::Mat &log, SIFTPoint &point)
+{
+    std::vector<double> hist(36, 0);
+    cacl_hist(log, point, hist);
+
+    long max_i = std::distance(hist.begin(), std::max_element(hist.begin(), hist.end()));
+    update_rotation_point(hist, point, max_i);
+
+    for (long i = 0; i < hist.size(); ++i)
+        if (hist[i] > 0.8 * hist[max_i])
+            if ((i != max_i)
+                && (i - 1 != max_i)
+                && (i + 1 != max_i))
+                update_rotation_point(hist, point, i);
 }
 
 
@@ -452,12 +454,11 @@ void demoSIFT(int argc, char** argv) {
 
     std::cout << "End filtration of points." << std::endl;
 
-    // TODO: Calculate rotation
+    get_rotation_point(ref_points, ref_log_piramid);
+    get_rotation_point(test_points, test_log_piramid);
 
-    //get_rotation_point(ref_points, ref_log_piramid);
-    //get_rotation_point(test_points, test_log_piramid);
+    std::cout << "End get rotation of points." << std::endl;
 
-    //std::cout << "End get rotation of points." << std::endl;
 
     // TODO: Build descriptors
 
