@@ -104,6 +104,7 @@
     <ClCompile Include="kmeans.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="otsuthreshold.cpp" />
+    <ClCompile Include="graphcut.cpp" />
 	<ClCompile Include="splitAndMerge.cpp" />
     <ClCompile Include="watershed.cpp">
     </ClCompile>
