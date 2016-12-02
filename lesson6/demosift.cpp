@@ -261,11 +261,13 @@ bool check_point(const cv::Mat &bottom_mat,
 		point.sigma += std::round(dX.at<double>(2, 0));
 
 		if (point.sigma >= num_images ||
-			point.sigma <= 0 ||
+			point.sigma < 0 ||
 			point.row >= central_mat.rows ||
-			point.row <= 0 ||
+			point.row < 0 ||
 			point.col >= central_mat.cols ||
-			point.col <= 0)
+			point.col < 0 ||
+			point.sigma < 0 ||
+			point.sigma >= num_images)
 			return false;
 
 		if (dX.at<double>(0, 0) < 0.5 ||
@@ -346,11 +348,11 @@ void cacl_hist(const cv::Mat &log, SIFTPoint &point, std::vector<double> &hist)
 		init_j = 1;
 
 	end_i = point.row + R;
-	if (init_i >= log.rows - 1)
-		init_i = log.rows - 2;
+	if (end_i >= log.rows - 1)
+		end_i = log.rows - 2;
 	end_j = point.col + R;
-	if (init_j >= log.cols - 1)
-		init_j = log.cols - 2;
+	if (end_j >= log.cols - 1)
+		end_j = log.cols - 2;
 
 	for (size_t i = init_i; i < end_i; ++i) {
 		for (size_t j = init_j; j < end_j; ++j) {
@@ -755,7 +757,9 @@ void demoSIFT(int argc, char** argv) {
 
 
 	// TODO: Show result
-	std::sort(pairs.begin(), pairs.end(), [](auto t1, auto t2) {return std::get<2>(t1) < std::get<2>(t2); });
+	std::sort(pairs.begin(), pairs.end(), 
+			  [](std::tuple<size_t, size_t, double> t1, 
+		         std::tuple<size_t, size_t, double> t2) {return std::get<2>(t1) < std::get<2>(t2); });
 
 	auto first = *pairs.begin();
 	SIFTPoint test_first = test_vector[std::get<0>(first)];
