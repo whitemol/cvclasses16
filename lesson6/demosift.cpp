@@ -14,6 +14,7 @@
 #include <functional>
 #include <chrono>
 #include <ctime>
+#include <algorithm>
 
 
 
@@ -515,6 +516,7 @@ double euclidian_distance(const SIFTPoint& p1, const SIFTPoint& p2)
 
 
 // very slow searching O(ref_size*test_size)
+// tuple: index in test, index in ref, distance
 std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<SIFTPoint>& ref, const std::vector<SIFTPoint>& test)
 {
 	std::vector<std::tuple<size_t, size_t, double>> pairs;
@@ -749,17 +751,35 @@ void demoSIFT(int argc, char** argv) {
 		for (size_t j = 0; j < test_points[i].size(); j++)
 			test_vector.push_back(test_points[i][j]);
 
-	auto pairs = compute_pairs(ref_vector, test_vector);
+	auto pairs = compute_pairs(ref_vector, test_vector); // tuple: index in test, index in ref, distance
 	elapsed_time = (clock() - start) / (1.0*CLOCKS_PER_SEC);
 	
-
-
 	// auto pairs = compute_pairs(ref_points, test_points);
 	std::cout << "End comparing. " << elapsed_time << " sec" << std::endl;
 
 
-
 	// TODO: Show result
+	std::sort(pairs.begin(), pairs.end(), [](auto t1, auto t2) {return std::get<2>(t1) < std::get<2>(t2); });
+
+	auto first = *pairs.begin();
+	SIFTPoint test_first = test_vector[std::get<0>(first)];
+	SIFTPoint ref_first  = ref_vector [std::get<1>(first)];
+	cv::circle(test_image, cv::Point(test_first.col, test_first.row), 5, cv::Scalar(0, 0, 255), 5);
+	cv::circle(ref_image,  cv::Point(ref_first.col,  ref_first.row),  5, cv::Scalar(0, 0, 255), 5);
+
+	
+	auto second = *(pairs.begin()+1);
+	SIFTPoint test_second = test_vector[std::get<0>(second)];
+	SIFTPoint ref_second  = ref_vector [std::get<1>(second)];
+	cv::circle(test_image, cv::Point(test_second.col, test_second.row), 5, cv::Scalar(0, 255, 0), 5);
+	cv::circle(ref_image,  cv::Point(ref_second.col,  ref_second.row),  5, cv::Scalar(0, 255, 0), 5);
+	
+
+	auto third = *(pairs.begin() + 2);
+	SIFTPoint test_third = test_vector[std::get<0>(third)];
+	SIFTPoint ref_third  = ref_vector [std::get<1>(third)];
+	cv::circle(test_image, cv::Point(test_third.col, test_third.row), 5, cv::Scalar(255, 0, 0), 5);
+	cv::circle(ref_image,  cv::Point(ref_third.col,  ref_third.row),  5, cv::Scalar(255, 0, 0), 5);
 
 	cv::imshow("Reference image", ref_image);
 	cv::imshow("Test image", test_image);
