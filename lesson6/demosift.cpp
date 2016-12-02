@@ -37,8 +37,8 @@ struct SIFTPoint {
 	double sigma;
 
 	std::vector<double> rotation;
-	cv::Point position; // actua pisition in image
-	std::vector<double> descriptor;
+	cv::Point position; // actual pisition in image
+	std::vector<double> descriptor; // float? conversion to CV_32F will be required anyway
 };
 
 
@@ -487,7 +487,7 @@ void compute_descriptors(std::vector<std::vector<SIFTPoint>>& points, const cv::
 						}
 					}
 					m++;
-					std::cout << "i=" << i << ", j=" << j << ", m=" << m << std::endl;
+					// std::cout << "i=" << i << ", j=" << j << ", m=" << m << std::endl;
 				}
 			}
 			else
@@ -499,7 +499,7 @@ void compute_descriptors(std::vector<std::vector<SIFTPoint>>& points, const cv::
 			}
 		}
 	}
-	std::cout << "out of matrix " << k << " in: " << n << std::endl;
+	// std::cout << "out of matrix " << k << " in: " << n << std::endl;
 }
 
 
@@ -516,9 +516,6 @@ double euclidian_distance(const SIFTPoint& p1, const SIFTPoint& p2)
 
 std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<SIFTPoint>& points1, const std::vector<SIFTPoint>& points2)
 {
-
-	
-
 	std::vector<std::tuple<size_t, size_t, double>> pairs;
 	for (size_t i = 0; i < points1.size(); i++) {
 
@@ -535,6 +532,78 @@ std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<
 
 		pairs.push_back(std::make_tuple(i, min_distance_index, min_distance));
 	}
+
+
+	return std::move(pairs);
+}
+
+
+std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<std::vector<SIFTPoint>>& ref,
+	                                                          const std::vector<std::vector<SIFTPoint>>& test)
+{
+	std::vector<std::tuple<size_t, size_t, double>> pairs;
+
+	size_t num_of_features = 0;
+	for (size_t i = 0; i < ref.size(); i++)
+		num_of_features += ref[i].size();
+	cv::Mat ref_features(num_of_features, 128, CV_32F); // cv::flann works only with 32-bit float
+	size_t k = 0;
+	for (size_t i = 0; i < ref.size(); i++)
+		for (size_t j = 0; j < ref[i].size(); j++) {
+			cv::Mat row(1, 128, CV_32F, (void*)ref[i][j].descriptor.data());
+			row.copyTo(ref_features.row(k));
+			k++;
+		}
+
+
+	num_of_features = 0;
+	for (size_t i = 0; i < test.size(); i++)
+		num_of_features += test[i].size();
+	cv::Mat test_features(num_of_features, 128, CV_32F); // cv::flann works only with 32-bit float
+	k = 0;
+	for (size_t i = 0; i < test.size(); i++)
+		for (size_t j = 0; j < test[i].size(); j++) {
+			cv::Mat row(1, 128, CV_32F, (void*)test[i][j].descriptor.data());
+			row.copyTo(test_features.row(k));
+			k++;
+		}
+
+	/*
+	cv::flann::Index search_index(features, cv::flann::KDTreeIndexParams(4)); // 4 parallel kd-trees
+
+
+	k = 0;
+	std::vector<int>   indeces(2);
+	std::vector<float> distances(2);
+	std::vector<float> descriptor(128); // current sample
+	for (size_t i = 0; i < test.size(); i++)
+		for (size_t j = 0; j < test[i].size(); j++, k++) {
+			for (size_t v = 0; v < 128; v++)
+				descriptor[v] = float(test[i][j].descriptor[v]);
+			search_index.knnSearch(descriptor, indeces, distances, 2, cv::flann::SearchParams(32));
+			std::cout << k << " point on ref_image is checked" << std::endl;
+		}
+
+	*/
+
+
+	cv::FlannBasedMatcher matcher;
+	std::vector< cv::DMatch > matches;
+	
+	// matcher.match(ref_features, test_features, matches);
+	
+
+
+	matcher.add(ref_features);
+	matcher.train();
+
+
+	matcher.match(test_features, matches);
+
+
+	pairs.push_back(std::make_tuple(10, 10, 10.0));
+
+	std::cout << "matching done" << std::endl;
 
 
 	return std::move(pairs);
@@ -661,7 +730,9 @@ void demoSIFT(int argc, char** argv) {
 
 
 	// TODO: Compare images
+	
 	start = clock();
+	/*
 	std::vector<SIFTPoint> ref_vector, test_vector;
 
 	for (size_t i = 0; i < ref_points.size(); i++)
@@ -674,7 +745,10 @@ void demoSIFT(int argc, char** argv) {
 
 	auto pairs = compute_pairs(ref_vector, test_vector);
 	elapsed_time = (clock() - start) / (1.0*CLOCKS_PER_SEC);
+	*/
 
+
+	auto pairs = compute_pairs(ref_points, test_points);
 	std::cout << "End comparing. " << elapsed_time << " sec" << std::endl;
 
 
