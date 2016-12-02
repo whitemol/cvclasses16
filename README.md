@@ -47,8 +47,8 @@ Overview and discussion feature definition and properties. Corner Detection algo
 ### [6. Feature Matching](https://docs.google.com/presentation/d/1yAtW08Z6YEWdK-bmFgq6DKaSSqPr_N70MtOrCgObmYs/edit?usp=sharing)
 Overview and discussion of SIFT and SURF detectors/descriptors. Basic image transformation models (Affine, Perspective) and feature matching approaches is described.
 
-### 7. Object Tracking
-TODO
+### [7. Feature Tracking](https://docs.google.com/presentation/d/1MgpWbwaPCXM4sYLBSqMwyEm0pNnBSblAC9-sQQmuVFM/edit?usp=sharing)
+Overview and discussion Feature Tracking algorithms based on Lucas-Kanade ideas published in 1981.
 
 ### 8. Stereovision
 TODO
