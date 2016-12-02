@@ -514,16 +514,21 @@ double euclidian_distance(const SIFTPoint& p1, const SIFTPoint& p2)
 }
 
 
-std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<SIFTPoint>& points1, const std::vector<SIFTPoint>& points2)
+// very slow searching O(ref_size*test_size)
+std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<SIFTPoint>& ref, const std::vector<SIFTPoint>& test)
 {
 	std::vector<std::tuple<size_t, size_t, double>> pairs;
-	for (size_t i = 0; i < points1.size(); i++) {
 
-		double min_distance = 10;
+	// int start;  double elapsed_time;
+	for (size_t i = 0; i < test.size(); i++)
+	{
+		// start = clock();
+		// find minimal distance
+		double min_distance = 3; // all vectors are normalized -> norm of difference <= 2
 		size_t min_distance_index = 0;
-		for (size_t j = 0; j < points2.size(); j++) {
-
-			double d = euclidian_distance(points1[i], points2[j]);
+		for (size_t j = 0; j < ref.size(); j++)
+		{
+			double d = euclidian_distance(test[i], ref[j]);
 			if (d < min_distance) {
 				min_distance = d;
 				min_distance_index = j;
@@ -531,6 +536,8 @@ std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<
 		}
 
 		pairs.push_back(std::make_tuple(i, min_distance_index, min_distance));
+		// elapsed_time = (clock() - start) / (1.0*CLOCKS_PER_SEC);
+		// std::cout << "closest point for " << i << " found " << elapsed_time << " sec" << std::endl;
 	}
 
 
@@ -729,11 +736,10 @@ void demoSIFT(int argc, char** argv) {
 	std::cout << "End building descriptors. " << elapsed_time << " sec" << std::endl;
 
 
-	// TODO: Compare images
-	
+	// Compare images
 	start = clock();
-	/*
-	std::vector<SIFTPoint> ref_vector, test_vector;
+
+	std::vector<SIFTPoint> ref_vector, test_vector; // store in two vectors
 
 	for (size_t i = 0; i < ref_points.size(); i++)
 		for (size_t j = 0; j < ref_points[i].size(); j++)
@@ -745,10 +751,10 @@ void demoSIFT(int argc, char** argv) {
 
 	auto pairs = compute_pairs(ref_vector, test_vector);
 	elapsed_time = (clock() - start) / (1.0*CLOCKS_PER_SEC);
-	*/
+	
 
 
-	auto pairs = compute_pairs(ref_points, test_points);
+	// auto pairs = compute_pairs(ref_points, test_points);
 	std::cout << "End comparing. " << elapsed_time << " sec" << std::endl;
 
 
