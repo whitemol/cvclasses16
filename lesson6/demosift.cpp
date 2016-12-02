@@ -20,13 +20,14 @@
 
 #define M_PI 3.14159265358979323846
 
+using IMG_TYPE = float;
+
 size_t num_octaves;
 size_t num_images;
 double init_sigma;
 double k;
 double r_th = 10;
 double dog_th = 0.03;
-
 
 struct SIFTPoint {
 
@@ -58,34 +59,34 @@ const cv::String keys =
 ;
 
 
-std::tuple<uint8_t, uint8_t> extr_win(const cv::Mat &mat1,
+std::tuple<IMG_TYPE, IMG_TYPE> extr_win(const cv::Mat &mat1,
 	const cv::Mat &mat2,
 	const cv::Mat &mat3,
 	const size_t &row, const size_t &col)
 {
-	uint8_t max_val = std::numeric_limits<uint_fast8_t>::min();
-	uint8_t min_val = std::numeric_limits<uint_fast8_t>::max();
+	IMG_TYPE max_val = std::numeric_limits<IMG_TYPE>::min();
+	IMG_TYPE min_val = std::numeric_limits<IMG_TYPE>::max();
 
 	for (size_t i = row - 1; i <= row + 1; ++i)
 		for (size_t j = col - 1; j <= col + 1; ++j) {
 			if (i != row && j != col) {
-				max_val = std::max(max_val, mat1.at<uint8_t>(i, j));
-				max_val = std::max(max_val, mat2.at<uint8_t>(i, j));
-				max_val = std::max(max_val, mat3.at<uint8_t>(i, j));
+				max_val = std::max(max_val, mat1.at<IMG_TYPE>(i, j));
+				max_val = std::max(max_val, mat2.at<IMG_TYPE>(i, j));
+				max_val = std::max(max_val, mat3.at<IMG_TYPE>(i, j));
 
-				min_val = std::min(min_val, mat1.at<uint8_t>(i, j));
-				min_val = std::min(min_val, mat2.at<uint8_t>(i, j));
-				min_val = std::min(min_val, mat3.at<uint8_t>(i, j));
+				min_val = std::min(min_val, mat1.at<IMG_TYPE>(i, j));
+				min_val = std::min(min_val, mat2.at<IMG_TYPE>(i, j));
+				min_val = std::min(min_val, mat3.at<IMG_TYPE>(i, j));
 			}
 		}
 
-	max_val = std::max(max_val, mat1.at<uint8_t>(row, col));
-	max_val = std::max(max_val, mat3.at<uint8_t>(row, col));
+	max_val = std::max(max_val, mat1.at<IMG_TYPE>(row, col));
+	max_val = std::max(max_val, mat3.at<IMG_TYPE>(row, col));
 
-	min_val = std::min(min_val, mat1.at<uint8_t>(row, col));
-	min_val = std::min(min_val, mat3.at<uint8_t>(row, col));
+	min_val = std::min(min_val, mat1.at<IMG_TYPE>(row, col));
+	min_val = std::min(min_val, mat3.at<IMG_TYPE>(row, col));
 
-	return std::tuple<uint8_t, uint8_t>(max_val, min_val);
+	return std::tuple<IMG_TYPE, IMG_TYPE>(max_val, min_val);
 }
 
 void find_points(const cv::Mat &bottom_mat,
@@ -99,7 +100,7 @@ void find_points(const cv::Mat &bottom_mat,
 
 	for (size_t i = 1; i < rows - 1; ++i) {
 		for (size_t j = 1; j < cols - 1; ++j) {
-			uint8_t value = central_mat.at<uint8_t>(i, j);
+			IMG_TYPE value = central_mat.at<IMG_TYPE>(i, j);
 
 			auto maxmin = extr_win(bottom_mat,
 				central_mat,
@@ -127,11 +128,13 @@ bool load_image(cv::Mat &image, const std::string &image_path)
 }
 
 
-void get_dog_piramid(const cv::Mat& image,
+void get_dog_piramid(cv::Mat& image,
 	std::vector<std::vector<cv::Mat>> &dof_piramid,
 	std::vector<std::vector<cv::Mat>> &blurred_piramid)
 {
 	cv::Size image_size = image.size();
+	//cv::Mat img; image.convertTo(img, CV_32F); image = img;
+	image.convertTo(image, CV_32F);
 
 	//std::vector<std::vector<cv::Mat>> blurred_piramid(num_octaves);
 	blurred_piramid.resize(num_octaves);
@@ -181,12 +184,12 @@ cv::Mat get_dD(const cv::Mat &bottom_mat,
 {
 	cv::Mat res = cv::Mat(3, 1, CV_64F);
 
-	res.at<double>(0, 0) = ((double)central_mat.at<uint8_t>(point.row + 1, point.col) -
-		(double)central_mat.at<uint8_t>(point.row - 1, point.col)) / 2.0f;
-	res.at<double>(1, 0) = ((double)central_mat.at<uint8_t>(point.row, point.col + 1) -
-		(double)central_mat.at<uint8_t>(point.row, point.col - 1)) / 2.0f;
-	res.at<double>(2, 0) = ((double)bottom_mat.at<uint8_t>(point.row, point.col) -
-		(double)top_mat.at<uint8_t>(point.row, point.col)) / 2.0f;
+	res.at<double>(0, 0) = ((double) central_mat.at<IMG_TYPE>(point.row + 1, point.col) -
+		(double)central_mat.at<IMG_TYPE>(point.row - 1, point.col)) / 2.0f;
+	res.at<double>(1, 0) = ((double) central_mat.at<IMG_TYPE>(point.row, point.col + 1) -
+		(double)central_mat.at<IMG_TYPE>(point.row, point.col - 1)) / 2.0f;
+	res.at<double>(2, 0) = ((double) top_mat.at<IMG_TYPE>(point.row, point.col) -
+		(double) bottom_mat.at<IMG_TYPE>(point.row, point.col)) / 2.0f;
 
 	return std::move(res);
 }
@@ -199,32 +202,32 @@ cv::Mat get_d2D(const cv::Mat &bottom_mat,
 {
 	cv::Mat res = cv::Mat(3, 3, CV_64F);
 
-	res.at<double>(0, 0) = ((double)central_mat.at<uint8_t>(point.row - 1, point.col) -
-		2.0 * central_mat.at<uint8_t>(point.row, point.col) +
-		(double)central_mat.at<uint8_t>(point.row + 1, point.col)) / 4.0;
-	res.at<double>(1, 1) = ((double)central_mat.at<uint8_t>(point.row, point.col - 1) -
-		2.0 * central_mat.at<uint8_t>(point.row, point.col) +
-		(double)central_mat.at<uint8_t>(point.row, point.col + 1)) / 4.0;
-	res.at<double>(2, 2) = ((double)bottom_mat.at<uint8_t>(point.row, point.col) -
-		2.0 * central_mat.at<uint8_t>(point.row, point.col) +
-		(double)top_mat.at<uint8_t>(point.row, point.col)) / 4.0;
+	res.at<double>(0, 0) = ((double)central_mat.at<IMG_TYPE>(point.row - 1, point.col) -
+		2.0 * central_mat.at<IMG_TYPE>(point.row, point.col) +
+		(double)central_mat.at<IMG_TYPE>(point.row + 1, point.col));
+	res.at<double>(1, 1) = ((double)central_mat.at<IMG_TYPE>(point.row, point.col - 1) -
+		2.0 * central_mat.at<IMG_TYPE>(point.row, point.col) +
+		(double)central_mat.at<IMG_TYPE>(point.row, point.col + 1));
+	res.at<double>(2, 2) = ((double)bottom_mat.at<IMG_TYPE>(point.row, point.col) -
+		2.0 * central_mat.at<IMG_TYPE>(point.row, point.col) +
+		(double)top_mat.at<IMG_TYPE>(point.row, point.col));
 
-	res.at<double>(0, 1) = ((double)central_mat.at<uint8_t>(point.row + 1, point.col + 1) -
-		(double)central_mat.at<uint8_t>(point.row + 1, point.col - 1) -
-		(double)central_mat.at<uint8_t>(point.row - 1, point.col + 1) +
-		(double)central_mat.at<uint8_t>(point.row - 1, point.col - 1)) / 4.0;
+	res.at<double>(0, 1) = ((double)central_mat.at<IMG_TYPE>(point.row + 1, point.col + 1) -
+		(double)central_mat.at<IMG_TYPE>(point.row + 1, point.col - 1) -
+		(double)central_mat.at<IMG_TYPE>(point.row - 1, point.col + 1) +
+		(double)central_mat.at<IMG_TYPE>(point.row - 1, point.col - 1)) / 4.0;
 	res.at<double>(1, 0) = res.at<double>(0, 1);
 
-	res.at<double>(0, 2) = ((double)top_mat.at<uint8_t>(point.row + 1, point.col) +
-		(double)top_mat.at<uint8_t>(point.row - 1, point.col) -
-		(double)bottom_mat.at<uint8_t>(point.row + 1, point.col) +
-		(double)bottom_mat.at<uint8_t>(point.row - 1, point.col)) / 4.0;
+	res.at<double>(0, 2) = ((double)top_mat.at<IMG_TYPE>(point.row + 1, point.col) +
+		(double)top_mat.at<IMG_TYPE>(point.row - 1, point.col) -
+		(double)bottom_mat.at<IMG_TYPE>(point.row + 1, point.col) +
+		(double)bottom_mat.at<IMG_TYPE>(point.row - 1, point.col)) / 4.0;
 	res.at<double>(2, 0) = res.at<double>(0, 2);
 
-	res.at<double>(1, 2) = ((double)-top_mat.at<uint8_t>(point.row, point.col + 1) +
-		(double)top_mat.at<uint8_t>(point.row, point.col - 1) -
-		(double)bottom_mat.at<uint8_t>(point.row, point.col + 1) +
-		(double)bottom_mat.at<uint8_t>(point.row, point.col - 1)) / 4.0;
+	res.at<double>(1, 2) = ((double)top_mat.at<IMG_TYPE>(point.row, point.col + 1) +
+		(double)top_mat.at<IMG_TYPE>(point.row, point.col - 1) -
+		(double)bottom_mat.at<IMG_TYPE>(point.row, point.col + 1) +
+		(double)bottom_mat.at<IMG_TYPE>(point.row, point.col - 1)) / 4.0;
 	res.at<double>(2, 1) = res.at<double>(1, 2);
 
 	return std::move(res);
@@ -274,11 +277,13 @@ bool check_point(const cv::Mat &bottom_mat,
 			dX.at<double>(1, 0) < 0.5 ||
 			dX.at<double>(2, 0) < 0.5)
 			break;
+		//else
+		//	return false;
 	}
 
 	//cv::transpose(dD, dD);
 	//double value_D = central_mat.at<double>(point.row, point.col) + 0.5 * dD.t() * dX;
-	double value_D = central_mat.at<uint8_t>(point.row, point.col) + 0.5 * dD.dot(dX);
+	double value_D = central_mat.at<IMG_TYPE>(point.row, point.col) + 0.5 * dD.dot(dX);
 
 	if (std::abs(value_D) < dog_th)
 		return false;
@@ -359,14 +364,14 @@ void cacl_hist(const cv::Mat &log, SIFTPoint &point, std::vector<double> &hist)
 			double curr_R = std::sqrt(std::pow(i - point.row, 2.0)
 				+ std::pow(j - point.col, 2.0));
 			if (curr_R <= R) {
-				double theta = std::atan((log.at<uint8_t>(i, j + 1)
-					- log.at<uint8_t>(i, j - 1))
-					/ (log.at<uint8_t>(i + 1, j)
-						- log.at<uint8_t>(i - 1, j) + 1e-6));
-				double m = std::sqrt(std::pow(log.at<uint8_t>(i, j + 1)
-					- log.at<uint8_t>(i, j - 1), 2.0)
-					+ std::pow(log.at<uint8_t>(i + 1, j)
-						- log.at<uint8_t>(i - 1, j), 2.0));
+				double theta = std::atan((log.at<IMG_TYPE>(i, j + 1)
+					- log.at<IMG_TYPE>(i, j - 1))
+					/ (log.at<IMG_TYPE>(i + 1, j)
+						- log.at<IMG_TYPE>(i - 1, j) + 1e-6));
+				double m = std::sqrt(std::pow(log.at<IMG_TYPE>(i, j + 1)
+					- log.at<IMG_TYPE>(i, j - 1), 2.0)
+					+ std::pow(log.at<IMG_TYPE>(i + 1, j)
+						- log.at<IMG_TYPE>(i - 1, j), 2.0));
 
 				hist[(int)((theta + 3.14 / 2.0) * 180.0 / 3.14 / 10.0)] += m;
 			}
@@ -431,18 +436,18 @@ void compute_descriptors(std::vector<std::vector<SIFTPoint>>& points, const cv::
 
 								double dx, dy; // derivatives
 								if (x == 0)
-									dx = double(roi.at<uint8_t>(x + 1, y)) - double(roi.at<uint8_t>(x, y)); // left border
+									dx = double(roi.at<IMG_TYPE>(x + 1, y)) - double(roi.at<IMG_TYPE>(x, y)); // left border
 								else if (x == 15)
-									dx = double(roi.at<uint8_t>(x, y)) - double(roi.at<uint8_t>(x - 1, y)); // right border
+									dx = double(roi.at<IMG_TYPE>(x, y)) - double(roi.at<IMG_TYPE>(x - 1, y)); // right border
 								else
-									dx = 0.5*double(roi.at<uint8_t>(x + 1, y)) - 0.5*double(roi.at<uint8_t>(x - 1, y));
+									dx = 0.5*double(roi.at<IMG_TYPE>(x + 1, y)) - 0.5*double(roi.at<IMG_TYPE>(x - 1, y));
 
 								if (y == 0)
-									dy = double(roi.at<uint8_t>(x, y + 1)) - double(roi.at<uint8_t>(x, y)); // top border
+									dy = double(roi.at<IMG_TYPE>(x, y + 1)) - double(roi.at<IMG_TYPE>(x, y)); // top border
 								else if (y == 15)
-									dy = double(roi.at<uint8_t>(x, y)) - double(roi.at<uint8_t>(x, y - 1)); // bottom border
+									dy = double(roi.at<IMG_TYPE>(x, y)) - double(roi.at<IMG_TYPE>(x, y - 1)); // bottom border
 								else
-									dy = 0.5*double(roi.at<uint8_t>(x, y + 1)) - 0.5*double(roi.at<uint8_t>(x, y - 1));
+									dy = 0.5*double(roi.at<IMG_TYPE>(x, y + 1)) - 0.5*double(roi.at<IMG_TYPE>(x, y - 1));
 
 								double orientation;
 								try {
@@ -454,6 +459,10 @@ void compute_descriptors(std::vector<std::vector<SIFTPoint>>& points, const cv::
 								catch (...) { // dx too small
 									orientation = 0;
 								}
+								orientation -= points[i][j].rotation[0] * M_PI / 180.0;
+								if (orientation < 0)
+									orientation = 2 * M_PI + orientation;
+
 								double magnitude = sqrt(dx*dx + dy*dy);
 
 								// weight with gaussian
@@ -462,7 +471,7 @@ void compute_descriptors(std::vector<std::vector<SIFTPoint>>& points, const cv::
 								double ry = double(y) - 8;
 								magnitude *= exp(-rx*rx / (s*s))*exp(-ry*ry / (s*s));
 
-								uint8_t index = uint8_t(4 * orientation / M_PI);
+								size_t index = size_t(4 * orientation / M_PI);
 								points[i][j].descriptor[(by * 4 + bx) * 8 + index] += magnitude; // increment histogram
 							}
 						}
@@ -523,11 +532,29 @@ std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<
 {
 	std::vector<std::tuple<size_t, size_t, double>> pairs;
 
-	// int start;  double elapsed_time;
+/*	std::vector<bool> get_test(test.size(), false);
+
+	for (size_t i = 0; i < test.size(); i++) {
+		double min_distance = 3; // all vectors are normalized -> norm of difference <= 2
+		size_t min_distance_index = 0;
+		for (size_t j = 0; j < ref.size(); j++) {
+			if (get_test[j] == false) {
+				double d = euclidian_distance(test[i], ref[j]);
+				if (d < min_distance) {
+					min_distance = d;
+					min_distance_index = j;
+				}
+			}
+		}
+
+		if (min_distance <= 2) {
+			pairs.push_back(std::make_tuple(i, min_distance_index, min_distance));
+			get_test[min_distance_index] = true;
+		}
+	}*/
+
 	for (size_t i = 0; i < test.size(); i++)
 	{
-		// start = clock();
-		// find minimal distance
 		double min_distance = 3; // all vectors are normalized -> norm of difference <= 2
 		size_t min_distance_index = 0;
 		for (size_t j = 0; j < ref.size(); j++)
@@ -540,111 +567,117 @@ std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<
 		}
 
 		pairs.push_back(std::make_tuple(i, min_distance_index, min_distance));
-		// elapsed_time = (clock() - start) / (1.0*CLOCKS_PER_SEC);
-		// std::cout << "closest point for " << i << " found " << elapsed_time << " sec" << std::endl;
 	}
 
+	std::vector<std::tuple<size_t, size_t, double>> pairs_filt;
+	std::vector<bool> use_vec(pairs.size(), false);
+	bool del_ref, del_test;
 
-	return std::move(pairs);
+	for (size_t i = 0; i < pairs.size(); i++) {
+
+		del_ref = false;
+		del_test = false;
+
+		if (use_vec[i] == false) {
+			pairs_filt.push_back(pairs[i]);
+
+			SIFTPoint ref_first_i = ref[std::get<1>(pairs[i])]; // 0 test 1 ref
+			SIFTPoint test_first_i = test[std::get<0>(pairs[i])]; // 0 test 1 ref
+
+			for (size_t j = i; j < pairs.size(); j++) {
+
+				SIFTPoint ref_first_j = ref[std::get<1>(pairs[j])];
+				SIFTPoint test_first_j = test[std::get<0>(pairs[j])];
+
+				if (ref_first_i.position == ref_first_j.position &&
+					std::round(ref_first_i.sigma) == std::round(ref_first_j.sigma))
+					use_vec[j] = true;
+
+				if (test_first_i.position == test_first_j.position &&
+					std::round(test_first_i.sigma) == std::round(test_first_j.sigma))
+					use_vec[j] = true;
+			}
+		}
+		use_vec[i] = true;
+	}
+	//auto pairs_filt = pairs;
+
+	std::sort(pairs_filt.begin(), pairs_filt.end(),
+			  [](std::tuple<size_t, size_t, double> t1,
+			  std::tuple<size_t, size_t, double> t2) {return std::get<2>(t1) < std::get<2>(t2); });
+
+	return std::move(pairs_filt);
+	//return std::move(pairs);
 }
 
 
-std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const std::vector<std::vector<SIFTPoint>>& ref,
-	                                                          const std::vector<std::vector<SIFTPoint>>& test)
+std::vector<std::tuple<size_t, size_t, double>>
+compute_pairs(const std::vector<std::vector<SIFTPoint>>& ref,
+              const std::vector<std::vector<SIFTPoint>>& test)
 {
-	std::vector<std::tuple<size_t, size_t, double>> pairs;
+	std::vector<std::vector<std::tuple<size_t, size_t, double>>> pairs(4);
 
-	size_t num_of_features = 0;
-	for (size_t i = 0; i < ref.size(); i++)
-		num_of_features += ref[i].size();
-	cv::Mat ref_features(num_of_features, 128, CV_32F); // cv::flann works only with 32-bit float
-	size_t k = 0;
-	for (size_t i = 0; i < ref.size(); i++)
-		for (size_t j = 0; j < ref[i].size(); j++) {
-			cv::Mat row(1, 128, CV_32F, (void*)ref[i][j].descriptor.data());
-			row.copyTo(ref_features.row(k));
-			k++;
-		}
-
-
-	num_of_features = 0;
-	for (size_t i = 0; i < test.size(); i++)
-		num_of_features += test[i].size();
-	cv::Mat test_features(num_of_features, 128, CV_32F); // cv::flann works only with 32-bit float
-	k = 0;
-	for (size_t i = 0; i < test.size(); i++)
-		for (size_t j = 0; j < test[i].size(); j++) {
-			cv::Mat row(1, 128, CV_32F, (void*)test[i][j].descriptor.data());
-			row.copyTo(test_features.row(k));
-			k++;
-		}
-
-	/*
-	cv::flann::Index search_index(features, cv::flann::KDTreeIndexParams(4)); // 4 parallel kd-trees
-	k = 0;
-	std::vector<int>   indeces(2);
-	std::vector<float> distances(2);
-	std::vector<float> descriptor(128); // current sample
-	for (size_t i = 0; i < test.size(); i++)
-		for (size_t j = 0; j < test[i].size(); j++, k++) {
-			for (size_t v = 0; v < 128; v++)
-				descriptor[v] = float(test[i][j].descriptor[v]);
-			search_index.knnSearch(descriptor, indeces, distances, 2, cv::flann::SearchParams(32));
-			std::cout << k << " point on ref_image is checked" << std::endl;
-		}
-	*/
-
-
-	cv::FlannBasedMatcher matcher;
-	std::vector< cv::DMatch > matches;
-
-	// matcher.match(ref_features, test_features, matches);
-
-
-
-	matcher.add(ref_features);
-	matcher.train();
-
-
-	matcher.match(test_features, matches);
-
-
-	pairs.push_back(std::make_tuple(10, 10, 10.0));
-
-	std::cout << "matching done" << std::endl;
-
-
-	return std::move(pairs);
-}
-// {
-	/*
-	double min_distance = 10;
-	size_t min_distance_i = 0;
-	size_t min_distance_j = 0;
-	auto point = ref_points[0][0];
-	for (size_t it = 0; it < test_points.size(); ++it) {
-		for (size_t jt = 0; jt < test_points[it].size(); ++jt) {
-			// calculate distance
-			size_t l = test_points[it][jt].descriptor_v.size();
-			if (l == 0)
-				continue;
-			double d = 0;
-			for (size_t b = 0; b < test_points[it][jt].descriptor_v.size(); b++) {
-				double t = point.descriptor_v[b] - test_points[it][jt].descriptor_v[b];
-				d += t*t;
+	for (size_t k = 0; k < ref.size(); k++) {
+		for (size_t i = 0; i < test[k].size(); i++) {
+			double min_distance = 3; // all vectors are normalized -> norm of difference <= 2
+			size_t min_distance_index = 0;
+			for (size_t j = 0; j < ref[k].size(); j++) {
+				double d = euclidian_distance(test[k][i], ref[k][j]);
+				if (d < min_distance) {
+					min_distance = d;
+					min_distance_index = j;
+				}
 			}
-			d = sqrt(d);
-			if (d < min_distance) {
-				min_distance = d;
-				min_distance_i = it;
-				min_distance_j = jt;
-			}
+
+			pairs[k].push_back(std::make_tuple(i, min_distance_index, min_distance));
 		}
 	}
-	cv::circle(ref_image, cv::Point(ref_points[0][0].col, ref_points[0][0].row), 5, cv::Scalar(0, 0, 255), 5);
-	cv::circle(test_image, cv::Point(test_points[min_distance_i][min_distance_j].col, test_points[min_distance_i][min_distance_j].row), 5, cv::Scalar(0, 0, 255), 5);
-	*/
-//}
+
+	std::vector<std::tuple<size_t, size_t, double>> pairs_v;
+	for (size_t k = 0; k < pairs.size(); k++) {
+		for (size_t i = 0; i < pairs[k].size(); i++) {
+			pairs_v.push_back(pairs[k][i]);
+		}
+	}
+
+	std::sort(pairs_v.begin(), pairs_v.end(),
+			  [](std::tuple<size_t, size_t, double> t1,
+			  std::tuple<size_t, size_t, double> t2) {return std::get<2>(t1) < std::get<2>(t2); });
+
+	return std::move(pairs_v);
+}
+
+
+void drawResult(const cv::Mat& ref_image, const cv::Mat& test_image, cv::Mat& result,
+				const std::vector<std::tuple<size_t, size_t, double>>& pairs,
+				const std::vector<SIFTPoint>& ref_vector,
+				const std::vector<SIFTPoint>& test_vector,
+				const size_t num_points_begin,
+				const size_t num_points_end)
+{
+	result = cv::Mat(cv::Size(ref_image.cols + test_image.cols, std::max(ref_image.rows, test_image.rows)), ref_image.type());
+	ref_image.copyTo(result(cv::Rect(0, 0, ref_image.cols, ref_image.rows)));
+	test_image.copyTo(result(cv::Rect(ref_image.cols, 0, test_image.cols, test_image.rows)));
+	size_t num_points = num_points_end - num_points_begin;
+
+	for (size_t i = num_points_begin; i < num_points_end; ++i) { // pairs.size()
+		auto first = pairs[i];
+		SIFTPoint test_first = test_vector[std::get<0>(first)];
+		SIFTPoint ref_first = ref_vector[std::get<1>(first)];
+
+		long r = 255 * 3 / (num_points - i) - 255 * 2;
+		long g = 255 * 3 / (num_points - i) - 255 * 1;
+		long b = 255 * 3 / (num_points - i);
+		if (b > 255) b = 255;
+		if (r > 255) r = 255;
+		if (g > 255) g = 255;
+		auto color = cv::Scalar_<uint8_t>(r, g, b);
+
+		cv::circle(result, ref_first.position, 5, color, 5);
+		cv::circle(result, test_first.position + cv::Point(ref_image.cols, 0), 5, color, 5);
+	}
+}
+
 
 void demoSIFT(int argc, char** argv) {
 	help();
@@ -750,40 +783,28 @@ void demoSIFT(int argc, char** argv) {
 			test_vector.push_back(test_points[i][j]);
 
 	auto pairs = compute_pairs(ref_vector, test_vector); // tuple: index in test, index in ref, distance
+	//auto pairs = compute_pairs(ref_points, test_points); // tuple: index in test, index in ref, distance
 	elapsed_time = (clock() - start) / (1.0*CLOCKS_PER_SEC);
 
 	// auto pairs = compute_pairs(ref_points, test_points);
 	std::cout << "End comparing. " << elapsed_time << " sec" << std::endl;
+	std::cout << "End comparing. Count of pairs: " << pairs.size() << std::endl;
 
 
 	// TODO: Show result
-	std::sort(pairs.begin(), pairs.end(), 
-			  [](std::tuple<size_t, size_t, double> t1, 
-		         std::tuple<size_t, size_t, double> t2) {return std::get<2>(t1) < std::get<2>(t2); });
 
-	auto first = *pairs.begin();
-	SIFTPoint test_first = test_vector[std::get<0>(first)];
-	SIFTPoint ref_first  = ref_vector [std::get<1>(first)];
-	cv::circle(test_image, cv::Point(test_first.col, test_first.row), 5, cv::Scalar(0, 0, 255), 5);
-	cv::circle(ref_image,  cv::Point(ref_first.col,  ref_first.row),  5, cv::Scalar(0, 0, 255), 5);
+	cv::Mat result; 
+	drawResult(ref_image, test_image, result, pairs, ref_vector, test_vector, 0, 20);
+	cv::namedWindow("result 20 f", cv::WINDOW_NORMAL);
+	cv::imshow("result 20 f", result);
 
+	drawResult(ref_image, test_image, result, pairs, ref_vector, test_vector, pairs.size() - 20, pairs.size());
+	cv::namedWindow("result 20 l", cv::WINDOW_NORMAL);
+	cv::imshow("result 20 l", result);
 
-	auto second = *(pairs.begin()+1);
-	SIFTPoint test_second = test_vector[std::get<0>(second)];
-	SIFTPoint ref_second  = ref_vector [std::get<1>(second)];
-	cv::circle(test_image, cv::Point(test_second.col, test_second.row), 5, cv::Scalar(0, 255, 0), 5);
-	cv::circle(ref_image,  cv::Point(ref_second.col,  ref_second.row),  5, cv::Scalar(0, 255, 0), 5);
-
-
-	auto third = *(pairs.begin() + 2);
-	SIFTPoint test_third = test_vector[std::get<0>(third)];
-	SIFTPoint ref_third  = ref_vector [std::get<1>(third)];
-	cv::circle(test_image, cv::Point(test_third.col, test_third.row), 5, cv::Scalar(255, 0, 0), 5);
-	cv::circle(ref_image,  cv::Point(ref_third.col,  ref_third.row),  5, cv::Scalar(255, 0, 0), 5);
-
-	cv::imshow("Reference image", ref_image);
-	cv::imshow("Test image", test_image);
-	cv::imshow("Test result", ref_dog_piramid[0][0]);
+	drawResult(ref_image, test_image, result, pairs, ref_vector, test_vector, 0, pairs.size());
+	cv::namedWindow("result all", cv::WINDOW_NORMAL);
+	cv::imshow("result all", result);
 
 	cv::waitKey(0);
 
