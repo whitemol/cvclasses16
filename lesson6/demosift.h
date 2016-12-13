@@ -4,12 +4,12 @@
 
 #include <iostream>
 #include <vector>
-// #include <algorithm> // min
+#include <chrono>
 
 #include "opencv2/opencv.hpp"
-#include <opencv2\core\hal\hal.hpp>
-#include <opencv2\features2d.hpp>
-#include <opencv2\imgproc.hpp>
+#include <opencv2/core/hal/hal.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/imgproc.hpp>
 
 
 using namespace cv;
@@ -26,6 +26,8 @@ public:
 	SIFT(int nfeatures = 0, int nOctaveLayers = 3,
 		double contrastThreshold = 0.04, double edgeThreshold = 10,
 		double sigma = 1.6);
+
+	void printParams();
 
 	//! returns the descriptor size in floats (128)
 	int descriptorSize() const;
@@ -48,7 +50,7 @@ public:
 	void findScaleSpaceExtrema(const std::vector<Mat>& gauss_pyr, const std::vector<Mat>& dog_pyr,
 		std::vector<KeyPoint>& keypoints) const;
 
-	Ptr<SIFT> SIFT::create(int _nfeatures, int _nOctaveLayers,
+	Ptr<SIFT> create(int _nfeatures, int _nOctaveLayers,
 		double _contrastThreshold, double _edgeThreshold, double _sigma);
 
 protected:

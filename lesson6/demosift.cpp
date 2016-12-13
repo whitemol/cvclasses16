@@ -9,13 +9,15 @@ static void help()
 
 
 const cv::String keys =
-"{help h usage ? |               | Hepl info                         }"
-"{@ref_image     | img/ref.jpg   | Reference image.                  }"
-"{@test_image    | img/test1.jpg | Test image.                       }"
-"{num_octaves    | 4             | Number of octaves in the pyramid. }"
-"{num_images     | 5             | Number images in octave           }"
+"{help h usage ?    |               | Help info                         }"
+"{@ref_image        | img/ref.jpg   | Reference image.                  }"
+"{@test_image       | img/test1.jpg | Test image.                       }"
+"{nfeatures         | 2000          | Number of features.               }"
+"{nOctaveLayers     | 3             | Number of octaves in the pyramid. }"
+"{contrastThreshold | 0.04          | Contrast threshold.               }"
+"{edgeThreshold     | 10            | Edge threshold                    }"
+"{sigma             | 1.6           | Init sigma.                       }"
 ;
-
 
 
 bool load_image(cv::Mat& image, const std::string& image_path)
@@ -28,63 +30,6 @@ bool load_image(cv::Mat& image, const std::string& image_path)
 	}
 
 	return true;
-}
-
-
-std::vector<std::tuple<size_t, size_t, double>> compute_pairs(const cv::Mat& ref, const cv::Mat& test)
-{
-	std::vector<std::tuple<size_t, size_t, double>> pairs;
-	for (size_t i = 0; i < test.rows; i++)
-	{
-		double min_distance = 3; // all vectors are normalized -> norm of difference <= 2
-		size_t min_distance_index = 0;
-		for (size_t j = 0; j < ref.rows; j++)
-		{
-			double d = norm(test.row(i), ref.row(j));
-			if (d < min_distance)
-			{
-				min_distance = d;
-				min_distance_index = j;
-			}
-		}
-		pairs.push_back(std::make_tuple(i, min_distance_index, min_distance));
-	}
-	// sort by dstance
-	std::sort(pairs.begin(), pairs.end(), [](std::tuple<size_t, size_t, double> t1, std::tuple<size_t, size_t, double> t2) {return std::get<2>(t1) < std::get<2>(t2); });
-	return std::move(pairs);
-}
-
-
-void drawResult(cv::Mat& ref_image, cv::Mat& test_image,
-	const std::vector<std::tuple<size_t, size_t, double>>& pairs,
-	const std::vector<KeyPoint>& ref_vector, const std::vector<KeyPoint>& test_vector,
-	size_t count)
-{
-	size_t min_size = std::min(ref_vector.size(), test_vector.size());
-	count = std::min(min_size, count);
-
-
-	for (size_t i = 0; i < count; i++)
-	{ 
-		auto t = pairs.at(i);
-		KeyPoint test_point = ref_vector.at(std::get<0>(t));
-		KeyPoint ref_point = ref_vector.at(std::get<1>(t));
-
-		/*
-		long r = 255 * 3 / (count - i) - 255 * 2;
-		long g = 255 * 3 / (count - i) - 255 * 1;
-		long b = 255 * 3 / (count - i);
-		if (b > 255) b = 255;
-		if (r > 255) r = 255;
-		if (g > 255) g = 255;
-		auto color = cv::Scalar_<uint8_t>(r, g, b);
-		*/
-
-		auto color = cv::Scalar_<uint8_t>(0, 0, 255);
-
-		cv::circle(ref_image, ref_point.pt, 1, color, 1);
-		cv::circle(test_image, test_point.pt, 1, color, 1);
-	}
 }
 
 
@@ -105,15 +50,14 @@ void demoSIFT(int argc, char** argv)
 	const std::string ref_file = parser.get<std::string>(0);
 	const std::string test_file = parser.get<std::string>(1);
 
-	size_t num_octaves = parser.get<size_t>("num_octaves");
-	size_t num_images = parser.get<size_t>("num_images");
-
-	double init_sigma = 1.6;
-	double k = std::sqrt(2);
-
-
-	// int start;
-	// double elapsed_time;
+	int nfeatures = parser.get<size_t>("nfeatures");
+	int nOctaveLayers = parser.get<size_t>("nOctaveLayers");
+	double contrastThreshold = parser.get<double>("contrastThreshold");
+	int int_contrastThreshold = 4;
+	int edgeThreshold = parser.get<size_t>("edgeThreshold");
+	double sigma = parser.get<double>("sigma");
+	int int_sigma = 16;
+	int countPoints = 20;
 
 	// Load images
 	cv::Mat ref_image;
@@ -124,51 +68,89 @@ void demoSIFT(int argc, char** argv)
 	if (!load_image(test_image, test_file))
 		return;
 
-	// RGB2GRAY
-	
-	// cv::Mat g_ref_image;
-	// cv::Mat g_test_image;
+	namedWindow("test_image", cv::WINDOW_NORMAL);
+	imshow("test_image", test_image);
+	createTrackbar("countPoints", "test_image", &countPoints, 100);
 
-	// cv::cvtColor(ref_image, ref_image, cv::COLOR_RGB2GRAY);
-	// cv::cvtColor(test_image, test_image, cv::COLOR_RGB2GRAY);
+	namedWindow("ref_image", cv::WINDOW_NORMAL);
+	imshow("ref_image", ref_image);
+	createTrackbar("nfeatures", "ref_image", &nfeatures, 10000);
+	createTrackbar("nOctaveLayers", "ref_image", &nOctaveLayers, 20);
+	createTrackbar("contrastThreshold", "ref_image", &int_contrastThreshold, 100);
+	createTrackbar("edgeThreshold", "ref_image", &edgeThreshold, 50);
+	createTrackbar("sigma", "ref_image", &int_sigma, 50);
 
-	// std::cout << "End RGB to Gray conversations." << std::endl;
-	
+	for (size_t i = 0; ; ++i) {
 
+		contrastThreshold = int_contrastThreshold / 100.0;
+		sigma = int_sigma / 10.0;
 
-	SIFT sift(20); // 20 features
+		SIFT sift(nfeatures, nOctaveLayers, contrastThreshold, edgeThreshold, sigma);
+		std::cout << std::endl << std::endl << "Number of iteration: " << i << std::endl;
+		sift.printParams();
 
-	std::vector<KeyPoint> ref_points, test_points;
-	Mat ref_descriptors, test_descriptors;
-	sift.detectAndCompute(ref_image, Mat::ones(ref_image.size(), CV_8U), ref_points, ref_descriptors);
-	sift.detectAndCompute(test_image, Mat::ones(test_image.size(), CV_8U), test_points, test_descriptors);
+		auto start = std::chrono::system_clock::now();
 
-	std::cout << "descriptors computed" << std::endl;
+		std::vector<KeyPoint> ref_points, test_points;
+		Mat ref_descriptors, test_descriptors;
+		sift.detectAndCompute(ref_image, Mat::ones(ref_image.size(), CV_8U), ref_points, ref_descriptors);
 
+		std::chrono::duration<double> elapsed_seconds =
+				std::chrono::system_clock::now() - start;
 
-	for (size_t k = 0; k < ref_points.size(); k++)
-		cv::circle(ref_image, ref_points.at(k).pt, 1, Scalar(0, 0, 255), 1);
+		std::cout << "Ref descriptors computed. Elapsed time: " +
+					 std::to_string(elapsed_seconds.count()) + "s. "
+				  << "Number of points: " << ref_points.size() << std::endl;
 
+		start = std::chrono::system_clock::now();
 
-	//auto pairs = compute_pairs(ref_descriptors, test_descriptors); // tuple: index in test, index in ref, distance
-	//std::cout << "compute pairs" << std::endl;
+		sift.detectAndCompute(test_image, Mat::ones(test_image.size(), CV_8U), test_points, test_descriptors);
 
+		elapsed_seconds = std::chrono::system_clock::now() - start;
 
+		std::cout << "Test descriptors computed. Elapsed time: " +
+					 std::to_string(elapsed_seconds.count()) + "s. "
+				  << "Number of points: " << test_points.size() << std::endl;
 
-	// drawResult(ref_image, test_image, pairs, ref_points, test_points, 50);
+		start = std::chrono::system_clock::now();
 
+		std::cout << "FlannBasedMatcher. Number of points: " << countPoints << std::endl;
 
-	// cv::namedWindow("result all", cv::WINDOW_NORMAL);
-	cv::imshow("test", test_image);
-	cv::imshow("ref", ref_image);
+		FlannBasedMatcher matcher;
+		std::vector<DMatch> matches;
+		matcher.match(ref_descriptors, test_descriptors, matches);
 
-	cv::waitKey(0);
+		std::sort(matches.begin(), matches.end(), [](const DMatch& mat1, const DMatch& mat2){ return mat1.distance < mat2.distance;});
+
+		std::vector<DMatch> good_matches;
+
+		for( int i = 0; i < ref_descriptors.rows; i++ )
+			if(good_matches.size() < (size_t)countPoints)
+				good_matches.push_back(matches[i]);
+
+		elapsed_seconds = std::chrono::system_clock::now() - start;
+
+		std::cout << "Matches computed. Elapsed time: " +
+					 std::to_string(elapsed_seconds.count()) + "s. "
+				  << "Number of mathes: " << matches.size() << std::endl;
+
+		Mat img_matches;
+		drawMatches(ref_image, ref_points, test_image, test_points,
+					good_matches, img_matches, Scalar::all(-1), Scalar::all(-1),
+					std::vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS );
+
+		namedWindow("Good Matches", CV_WINDOW_NORMAL);
+		imshow("Good Matches", img_matches);
+
+		char c = (char)cv::waitKey(0);
+		if (c == 27)
+			return;
+	}
 }
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 namespace cv
 {
@@ -353,15 +335,6 @@ namespace cv
 }
 
 
-
-
-
-
-
-
-
-
-
 // SIFT implementation /////////////////////////////////////////////////////////////////////////////
 
 
@@ -369,6 +342,15 @@ Ptr<SIFT> SIFT::create(int _nfeatures, int _nOctaveLayers,
 	double _contrastThreshold, double _edgeThreshold, double _sigma)
 {
 	return makePtr<SIFT>(_nfeatures, _nOctaveLayers, _contrastThreshold, _edgeThreshold, _sigma);
+}
+
+void SIFT::printParams()
+{
+	std::cout << "Number of features. " << nfeatures << std::endl
+			  << "Number of octaves in the pyramid. " << nOctaveLayers << std::endl
+			  << "Contrast threshold. " << contrastThreshold << std::endl
+			  << "Edge threshold. " << edgeThreshold << std::endl
+			  << "Init sigma. " << sigma << std::endl;
 }
 
 //
