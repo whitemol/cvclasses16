@@ -1,45 +1,46 @@
-///@File: lesson5.cpp
-///@Brief: main function
-///@Author: Sidorov Stepan
-///@Date: 07.12.2015
-
 #include "stdafx.h"
 #include "IObjectTracking.h"
 
 int main(int argc, char** argv)
 {
-    std::cout << "Choose algorythm or press q to quit:\n" <<
-        "LK - Lucas-Kanade algorythm\n" <<
-        "TK - Tomasi-Kanade algorythm\n" <<
-        "STK - Shi-Tomasi-Kanade algorythm\n";
+	cv::CommandLineParser parser(argc, argv, 
+        "{@input_video            | dd73_l7.avi      | }"
+		"{@input_background_video | dd73_l7_back.avi | }"
+		"{@output_video           | out.avi          | }");
 
-    std::string name;
-    std::cin >> name;
+	std::string input_video = parser.get<std::string>("@input_video");
+	std::string input_background = parser.get<std::string>("@input_background_video");
+	std::string output_video = parser.get<std::string>("@output_video");
 
-    if (name == "q")
-        return 0;
+	cv::VideoCapture capture;
+	cv::VideoWriter writer;
 
-    std::unique_ptr<IObjectTracking> ptr(IObjectTracking::CreateAlgorythm(name));
-    if (ptr)
-    {
-        cv::VideoCapture capture;
-        if (argc == 1)
-            capture = cv::VideoCapture(0);
-        else
-            capture = cv::VideoCapture(argv[1]);
+	capture.open(input_background);
+	if (!capture.isOpened()) {
+		std::cerr << "Capture is not open." << std::endl;
+		return -1;
+	}
+	cv::Mat background;// = cv::imread("dd73.jpg", cv::IMREAD_GRAYSCALE);
+	capture >> background;
+	cvtColor(background, background, cv::COLOR_BGR2GRAY);
 
-        if (!capture.isOpened())
-        {
-            std::cout << "Capture opening failed.\n";
-            exit(1);
-        }
+	capture.open(input_video);
+	if (!capture.isOpened()) {
+		std::cerr << "Capture is not open." << std::endl;
+		return -1;
+	}
 
-        ptr->Run(capture);
-    }
-    else
-    {
-        std::cerr << "Invalid name of algorythm." << std::endl;
-    }
+	writer.open(output_video, CV_FOURCC('M', 'J', 'P', 'G'),
+				capture.get(CV_CAP_PROP_FPS), background.size());
+	if (!writer.isOpened()) {
+		std::cerr << "Writer is not open." << std::endl;
+		return -1;
+	}
+
+	ObjectTracking obj;
+	obj.Run(capture, background, writer);
+
+	cv::destroyAllWindows();
 
     return 0;
 }

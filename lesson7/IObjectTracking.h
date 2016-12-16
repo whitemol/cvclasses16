@@ -1,27 +1,20 @@
-///@File: IObjectTracking.h
-///@Brief: interface for ObjectTracking classes
-///@Author: Sidorov Stepan
-///@Date: 07.12.2015
-
 #include "stdafx.h"
 
 #pragma once
 
-class IObjectTracking
+class ObjectTracking
 {
 public:
-    ///@brief object tracking function
-    virtual void Run(cv::VideoCapture &capture) = 0;
 
-    ///@brief factory method
-    static IObjectTracking* CreateAlgorythm(const std::string& algorithmName);
+	void Run(cv::VideoCapture& capture, cv::Mat& background,
+			 cv::VideoWriter& writer);
 
-    ///@brief virtual destructor
-    virtual ~IObjectTracking() {}
+	void mark_stay_points(cv::Mat& image, const std::vector<cv::Point2f>& points,
+						  const std::vector<size_t>& stay_count,
+						  const std::vector<bool>& mov_any);
 
-    ///@brife reply name
-    virtual std::string GetName() const
-    {
-        return "ObjectTracking Base";
-    }
+	std::string GetName() const
+	{
+		return "LK demo.";
+	}
 };

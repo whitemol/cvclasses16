@@ -21,15 +21,6 @@
     <ClInclude Include="IObjectTracking.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectTrackingLK.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectTrackingTK.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectTrackingSTK.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -39,15 +30,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IObjectTracking.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectTrackingLK.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectTrackingTK.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectTrackingSTK.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
