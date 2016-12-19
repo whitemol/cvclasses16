@@ -1,11 +1,7 @@
-// lesson4.cpp : Defines the entry point for the console application.
-//
-
-#include "stdafx.h"
+#include "demosift.h"
 
 #include <iostream>
 
-void demoSIFT(int, char*[]) { std::cout << "SIFT is under construction"; }; // TODO implement it in separate file
 void demoSURF(int, char*[]) { std::cout << "SURF is under construction"; }; // TODO implement it in separate file
 void demoFAST(int, char*[]) { std::cout << "FAST is under construction"; }; // TODO implement it in separate file
 
